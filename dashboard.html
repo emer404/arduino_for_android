@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content=""> 
+    
+    <title>control de arduino</title>
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="assets/css/adminlte.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/plugins/font-awesome/css/font-awesome.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="assets/plugins/select2/select2.min.css">
+    <link rel="icon" type="image/png" href="assets/images/icons/favicon.ico" />
+    <!-- bootstrap wysihtml5 - text editor -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="assets/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
+    <!-- library for persian date picker -->
+    <link type="text/css" rel="stylesheet" href="assets/plugins/kamadatepicker/kamadatepicker.min.css" />
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.min.js"></script>
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.holidays.js"></script>
+    <link rel="stylesheet" href="assets/css/custom-style.css">
+
+    <style>
+        /* Custom UI Components */
+        .device-control-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .device-control-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        .device-icon-container {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .icon-fan { background-color: #e3f2fd; color: #1e88e5; }
+        .icon-plug { background-color: #f3e5f5; color: #8e24aa; }
+        
+        .device-meta {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .device-meta h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0 0 4px 0;
+        }
+        .device-meta p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 0 0 2px 0;
+        }
+        .status-badge-inline {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            height: fit-content;
+        }
+        .switch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        /* The Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 130px;
+            height: 46px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e53935; /* OFF Red */
+            transition: .3s;
+            border-radius: 46px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 38px;
+            width: 38px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #43a047; /* ON Green */
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(84px);
+        }
+        .switch-text {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            z-index: 1;
+            transition: .3s;
+        }
+        .text-off { right: -15px; }
+        .text-on { left: -15px; opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-off { opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-on { opacity: 1; }
+        
+        .status-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .state-off { color: #e53935; }
+        .state-off .dot { background-color: #e53935; }
+        .state-on { color: #43a047; }
+        .state-on .dot { background-color: #43a047; }
+        
+        .card-bottom-row {
+            border-top: 1px solid #f1f1f1;
+            padding-top: 15px;
+            font-size: 0.8rem;
+            color: #9e9e9e;
+        }
+
+        /* Recent Activities */
+        .recent-activity-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            margin-bottom: 30px;
+        }
+        .activity-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f4f4f4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 16px;
+        }
+        .bg-gradient-success { background: linear-gradient(135deg, #43a047, #2e7d32); }
+        .bg-gradient-danger { background: linear-gradient(135deg, #e53935, #c62828); }
+        .bg-gradient-info { background: linear-gradient(135deg, #00acc1, #00838f); }
+        .activity-content {
+            flex-grow: 1;
+        }
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .activity-time {
+            font-size: 0.75rem;
+            color: #9e9e9e;
+            font-weight: normal;
+        }
+        .activity-desc {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.8rem;
+            padding-top: 8px;
+            border-top: 1px dashed #eaeaea;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .status-value {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .status-on {
+            color: #2e7d32;
+        }
+        .status-off {
+            color: #c62828;
+        }
+        .status-info {
+            color: #00838f;
+        }
+        .status-date {
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand bg-white navbar-light border-bottom">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- left logo -->
+            <ul class="navbar-nav mr-auto">
+                <a href="#" class="brand-link">
+                    <img src="assets/images/arduino-logo.png" alt="Logo" class="brand-image" style="opacity: .8; max-width: 150px; height: auto;">
+                </a>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light text-center">control arduino</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar" >
+                <div style="">
+                    <!-- Sidebar user panel -->
+                    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                        <div class="image">
+                            <img src="assets/images/Avatars/Avatar 1.jpg" class="img-circle elevation-2" alt="User Image" style="width: 2.5rem; height: 2.5rem;">
+                        </div>
+                        <div class="info">
+                            <a href="#" class="d-block">User</a>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Menu -->
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fa fa-cog"></i>
+                                    <p>
+                                        <i class="right fa fa-angle-left"></i>
+                                        Devices
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="dashboard.html" class="nav-link">
+                                            <i class="fa fa-plus nav-icon"></i>
+                                            <p>Device Registration</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link" data-toggle="modal" data-target="#selectdeviceInfo">
+                                            <i class="fa fa-info nav-icon"></i>
+                                            <p>Realtime Data</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                    <nav class="mt-2 ">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active" data-toggle="modal" data-target="#selectdeviceExport">
+                                    <i class="fa fa-info nav-icon"></i>
+                                    <p>Reporting</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                    <nav class="mt-2 ">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="login.html" class="nav-link exit ">
+                                    <i class="nav-icon fa fa-sign-out"></i>
+                                    <p>Sign out</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 text-dark">control de arduino</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Home</a></li>
+                                <li class="breadcrumb-item active">Devices</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Hero Banner -->
+            <div class="container-fluid mb-4 mt-2">
+                <div id="heroCarousel" class="carousel slide" data-ride="carousel" data-interval="3000" style="height: 300px;">
+                    <ol class="carousel-indicators">
+                        <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#heroCarousel" data-slide-to="1"></li>
+                        <li data-target="#heroCarousel" data-slide-to="2"></li>
+                    </ol>
+                    <div class="carousel-inner" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); height: 300px;">
+                        <div class="carousel-item active" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(0, 77, 64, 0.7); color: #00e676; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(0, 230, 118, 0.3);">Sistema Inteligente</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Controla tus dispositivos Arduino</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #00e676; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">en tiempo real</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Monitorea, controla y automatiza tus proyectos IoT de manera fácil y segura desde cualquier lugar.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide 2 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(49, 27, 146, 0.7); color: #b388ff; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(179, 136, 255, 0.3);">Análisis de Datos</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Visualiza métricas y gráficos</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #b388ff; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">con precisión</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Exporta tus reportes en PDF y Excel para un análisis detallado del entorno.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(191, 54, 12, 0.7); color: #ff9e80; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(255, 158, 128, 0.3);">Alertas</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Recibe notificaciones</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #ff9e80; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">al instante</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Configura umbrales de sensores para proteger tus dispositivos Arduino.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- main content body -->
+            <section class="content">
+                <div class="container-fluid">
+                    
+                    <!-- Control Devices Cards Section -->
+                    <h3 class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem;">Control de Arduino</h3>
+                    <div class="row mb-4">
+                        <!-- Device 2: Enchufe Oficina -->
+                        <div class="col-md-5 col-lg-4 mb-3">
+                            <div class="device-control-card">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-plug">
+                                        <i class="fa fa-plug"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4>Arduino</h4>
+                                        <p>ID: dev-03</p>
+                                        <p>Oficina</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+                                
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked onchange="toggleState(this, 'stateText2', 'statusDot2')">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-on" id="statusDot2">
+                                        <span class="dot"></span> Estado: <span id="stateText2" style="margin-left: 4px;">Encendido</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-bottom-row">
+                                    Última actualización: 10:24:05 AM
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activities Section -->
+                        <div class="col-md-7 col-lg-8 mb-3">                            <div class="recent-activity-card">
+                                <div class="card-header border-0 bg-transparent" style="padding: 20px 24px 10px;">
+                                    <h3 class="card-title font-weight-bold m-0" style="color: #333; font-size: 1.3rem;">Actividades Recientes</h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-gradient-success">
+                                            <i class="fa fa-bolt"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                <span>Estado</span>
+                                                <span class="activity-time">Hoy, 10:24 AM</span>
+                                            </div>
+                                            <div class="activity-desc">El dispositivo fue activado de manera remota desde la interfaz web.</div>
+                                            <div class="activity-status">
+                                                <span class="status-label">Estado: </span>
+                                                <span class="status-value status-on">● Encendido</span>
+                                                <span class="status-date">Fecha: 21/05/2026</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                    
+
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-gradient-info">
+                                            <i class="fa fa-refresh"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                <span>Sistema reiniciado</span>
+                                                <span class="activity-time">Ayer, 11:45 PM</span>
+                                            </div>
+                                            <div class="activity-desc">Mantenimiento programado: el broker MQTT se reinició correctamente.</div>
+                                            <div class="activity-status">
+                                                <span class="status-label">Estado: </span>
+                                                <span class="status-value status-info">● Reiniciado</span>
+                                                <span class="status-date">Fecha: 20/05/2026</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function toggleState(checkbox, textId, containerId) {
+                            var textEl = document.getElementById(textId);
+                            var containerEl = document.getElementById(containerId);
+                            if(checkbox.checked) {
+                                textEl.innerText = "Encendido";
+                                containerEl.classList.remove('state-off');
+                                containerEl.classList.add('state-on');
+                            } else {
+                                textEl.innerText = "Apagado";
+                                containerEl.classList.remove('state-on');
+                                containerEl.classList.add('state-off');
+                            }
+                        }
+                    </script>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Registered devices</h3>
+                                </div>
+                                <div class="card-body table-responsive p-0">
+                                    <table class="table table-hover text-center">
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Device name</th>
+                                            <th>Device ID</th>
+                                            <th>Registration date</th>
+                                            <th>Device location</th>
+                                            <th>Device version</th>
+                                            <th>Status</th>
+                                            <th>Details</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                        <tr>
+                                            <td> 1 </td>
+                                            <td>Test Device</td>
+                                            <td>test-dev-01</td>
+                                            <td>2023-10-01</td>
+                                            <td>Living Room</td>
+                                            <td>v1.0</td>
+                                            <td><span class="badge badge-success">Active</span></td>
+                                            <td>
+                                                <a href="#" class="btn btn-app bg-primary">
+                                                    <i class="fa fa-info"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-app bg-danger">
+                                                    <i class="fa fa-trash-o"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 ">
+                                <button type="button" class="btn btn-block btn-success float-right" data-toggle="modal" data-target="#exampleModalCenter">Add device</button>
+
+                                <!-- Modal -->
+                                <div class="modal fade just-margin-top" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header float-right">
+                                                <h4 class="modal-title">Enter your device details</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form>
+                                                    <div class="col-md-12">
+                                                        <div class="card card-danger">
+                                                            <div class="card-body">
+                                                                <div class="form-group">
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                                                        </div>
+                                                                        <input type="text" class="form-control" placeholder="Device ID">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text"><i class="fa fa-list"></i></span>
+                                                                        </div>
+                                                                        <input type="text" class="form-control" placeholder="Device Version">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text"><i class="fa fa-microchip"></i></span>
+                                                                        </div>
+                                                                        <input type="text" class="form-control" placeholder="Device Name">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
+                                                                        </div>
+                                                                        <input type="text" class="form-control" placeholder="Device Location">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">close</button>
+                                                        <div class="just-space"></div>
+                                                        <button type="button" class="btn btn-success" data-dismiss="modal">Add</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>$.widget.bridge('uibutton', $.ui.button)</script>
+    <script src="assets/plugins/select2/select2.full.min.js"></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/plugins/knob/jquery.knob.js"></script>
+    <script src="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+    <script src="assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="assets/plugins/fastclick/fastclick.js"></script>
+    <script src="assets/js/adminlte.js"></script>
+    <script src="assets/plugins/chartjs-old/Chart.min.js"></script>
+    
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/jquery/jquery.easing.min.js"></script>
+    <script src="assets/js/ruang-admin.min.js"></script>
+    <script src="assets/plugins/chart.js/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        var customOptions = {
+            placeholder: "day/month/year"
+            , twodigit: false
+            , closeAfterSelect: false
+            , nextButtonIcon: "fa fa-arrow-circle-right"
+            , previousButtonIcon: "fa fa-arrow-circle-left"
+            , buttonsColor: "green"
+            , forceFarsiDigits: true
+            , markToday: true
+            , markHolidays: true
+            , highlightSelectedDay: true
+            , sync: true
+            , gotoToday: true
+        }
+        if (document.getElementById('date1')) kamaDatepicker('date1', customOptions);
+        if (document.getElementById('date2')) kamaDatepicker('date2', customOptions);
+    </script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="assets/plugins/morris/morris.min.js"></script>
+    <script>
+        $(function () {
+            $('.select2').select2()
+        })
+    </script>
+</body>
+</html>
