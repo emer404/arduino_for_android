@@ -338,12 +338,6 @@
                                 </a>
                             </li>
 
-                            <li class="nav-item">
-                                <a href="#table-section" class="nav-link">
-                                    <i class="nav-icon fa fa-list-ul"></i>
-                                    <p>Inventario de Dispositivos</p>
-                                </a>
-                            </li>
 
                             <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">SISTEMA</li>
 
@@ -370,10 +364,6 @@
                             <h1 class="m-0 text-dark">control de arduino</h1>
                         </div>
                         <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Home</a></li>
-                                <li class="breadcrumb-item active">Devices</li>
-                            </ol>
                         </div>
                     </div>
                 </div>
@@ -548,6 +538,16 @@
                                     document.getElementById('btnMqttConnect').disabled = true;
                                     document.getElementById('btnMqttDisconnect').disabled = false;
 
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: 'Conectado al broker MQTT',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true
+                                    });
+
                                     // Subscribe to the topic
                                     mqttClient.subscribe(topic, (err) => {
                                         if (!err) {
@@ -566,6 +566,24 @@
                                     if (payload === 'ON' || payload === 'OFF') {
                                         // Update the Arduino control state without republishing
                                         updateUIState(payload === 'ON');
+                                        addActivityLog('Actualización (MQTT)', 'Se recibió nuevo estado remoto: ' + payload, payload === 'ON');
+                                    } else {
+                                        // Intentar parsear como número o JSON para la gráfica
+                                        const numValue = parseFloat(payload);
+                                        if (!isNaN(numValue) && payload.trim() === numValue.toString()) {
+                                            if(typeof updateChart === 'function') updateChart(numValue);
+                                        } else {
+                                            try {
+                                                const data = JSON.parse(payload);
+                                                if (data.temperatura !== undefined) {
+                                                    if(typeof updateChart === 'function') updateChart(parseFloat(data.temperatura));
+                                                } else if (data.value !== undefined) {
+                                                    if(typeof updateChart === 'function') updateChart(parseFloat(data.value));
+                                                }
+                                            } catch(e) {
+                                                // No es JSON ni número simple
+                                            }
+                                        }
                                     }
                                 });
 
@@ -577,6 +595,16 @@
                                     let badge = document.getElementById('mqttStatusBadge');
                                     badge.className = 'badge badge-danger';
                                     badge.innerText = '❌ Error de conexión';
+
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: 'Error de conexión MQTT',
+                                        showConfirmButton: false,
+                                        timer: 4000,
+                                        timerProgressBar: true
+                                    });
                                 });
 
                                 // Handle disconnection
@@ -590,6 +618,16 @@
                                         badge.innerText = '🔴 Desconectado';
                                         document.getElementById('btnMqttConnect').disabled = false;
                                         document.getElementById('btnMqttDisconnect').disabled = true;
+
+                                        Swal.fire({
+                                            toast: true,
+                                            position: 'top-end',
+                                            icon: 'warning',
+                                            title: 'Conexión MQTT cerrada',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true
+                                        });
                                     }
                                 });
 
@@ -682,6 +720,81 @@
                             </div>
                         </div>
 
+                        <!-- Real-time Chart Section -->
+                        <div class="row mb-4" id="chart-section" style="scroll-margin-top: 70px;">
+                            <div class="col-12">
+                                <div class="card" style="border-radius: 14px; border: 1px solid #eaeaea; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                                    <div class="card-header bg-white border-0 pt-4 pb-2" style="border-radius: 14px 14px 0 0;">
+                                        <h3 class="card-title font-weight-bold" style="color: #333; font-size: 1.3rem;">
+                                            <i class="fa fa-line-chart text-success mr-2"></i>Monitorización en Tiempo Real
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="height: 300px;">
+                                            <canvas id="realtimeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            var realtimeChart;
+                            document.addEventListener("DOMContentLoaded", function() {
+                                var ctx = document.getElementById('realtimeChart');
+                                if (ctx && typeof Chart !== 'undefined') {
+                                    realtimeChart = new Chart(ctx.getContext('2d'), {
+                                        type: 'line',
+                                        data: {
+                                            labels: [], 
+                                            datasets: [{
+                                                label: 'Temperatura (°C) / Sensor',
+                                                data: [],
+                                                borderColor: '#43a047',
+                                                backgroundColor: 'rgba(67, 160, 71, 0.1)',
+                                                borderWidth: 2,
+                                                pointBackgroundColor: '#43a047',
+                                                pointRadius: 4,
+                                                fill: true
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                xAxes: [{
+                                                    display: true,
+                                                    scaleLabel: { display: true, labelString: 'Hora' }
+                                                }],
+                                                yAxes: [{
+                                                    display: true,
+                                                    scaleLabel: { display: true, labelString: 'Valor' },
+                                                    ticks: { suggestedMin: 15, suggestedMax: 35 }
+                                                }]
+                                            },
+                                            animation: { duration: 0 }
+                                        }
+                                    });
+                                }
+                            });
+
+                            function updateChart(value) {
+                                if (!realtimeChart) return;
+                                
+                                const now = new Date();
+                                const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                                
+                                realtimeChart.data.labels.push(timeStr);
+                                realtimeChart.data.datasets[0].data.push(value);
+                                
+                                if (realtimeChart.data.labels.length > 15) {
+                                    realtimeChart.data.labels.shift();
+                                    realtimeChart.data.datasets[0].data.shift();
+                                }
+                                realtimeChart.update();
+                            }
+                        </script>
+
                         <!-- Recent Activities Section -->
                     <div id="activities-section" class="row" style="scroll-margin-top: 70px;">
                         <div class="col-12 mb-3">
@@ -689,7 +802,7 @@
                                 <div class="card-header border-0 bg-transparent" style="padding: 20px 24px 10px;">
                                     <h3 class="card-title font-weight-bold m-0" style="color: #333; font-size: 1.3rem;">Actividades Recientes</h3>
                                 </div>
-                                <div class="card-body p-0">
+                                <div class="card-body p-0" id="activity-log-list" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
                                     <div class="activity-item">
                                         <div class="activity-icon bg-gradient-success">
                                             <i class="fa fa-bolt"></i>
@@ -732,6 +845,42 @@
                     </div>
 
                     <script>
+                        // Add dynamic activity log
+                        function addActivityLog(title, desc, isOn) {
+                            const list = document.getElementById('activity-log-list');
+                            if (!list) return;
+
+                            const now = new Date();
+                            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            const dateStr = now.toLocaleDateString();
+
+                            const iconClass = isOn ? 'bg-gradient-success' : 'bg-gradient-danger';
+                            const faIcon = isOn ? 'fa-bolt' : 'fa-power-off';
+                            const textColor = isOn ? '#43a047' : '#e53935';
+                            const statusText = isOn ? '● Encendido' : '● Apagado';
+
+                            const html = `
+                                <div class="activity-item" style="animation: fadeIn 0.5s; border-left: 3px solid ${textColor}; background-color: #fafafa;">
+                                    <div class="activity-icon ${iconClass}">
+                                        <i class="fa ${faIcon}"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">
+                                            <span>${title}</span>
+                                            <span class="activity-time">Hoy, ${timeStr}</span>
+                                        </div>
+                                        <div class="activity-desc">${desc}</div>
+                                        <div class="activity-status">
+                                            <span class="status-label">Estado: </span>
+                                            <span class="status-value" style="color: ${textColor}; font-weight: bold;">${statusText}</span>
+                                            <span class="status-date">Fecha: ${dateStr}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            list.insertAdjacentHTML('afterbegin', html);
+                        }
+
                         // Update UI state without publishing (for incoming MQTT messages)
                         function updateUIState(isOn) {
                             const checkbox = document.querySelector('#control-section input[type="checkbox"]');
@@ -769,112 +918,16 @@
 
                             // Publish state change via MQTT
                             publishMqttMessage(state);
+                            // Log the manual action
+                            addActivityLog('Comando Enviado (Web)', 'Se ordenó cambiar el estado a: ' + state, state === 'ON');
                         }
                     </script>
 
-                    <div id="table-section" class="row" style="scroll-margin-top: 70px;">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">Registered devices</h3>
-                                </div>
-                                <div class="card-body table-responsive p-0">
-                                    <table class="table table-hover text-center">
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Device name</th>
-                                            <th>Device ID</th>
-                                            <th>Registration date</th>
-                                            <th>Device location</th>
-                                            <th>Device version</th>
-                                            <th>Status</th>
-                                            <th>Details</th>
-                                            <th>Delete</th>
-                                        </tr>
-                                        <tr>
-                                            <td> 1 </td>
-                                            <td>Test Device</td>
-                                            <td>test-dev-01</td>
-                                            <td>2023-10-01</td>
-                                            <td>Living Room</td>
-                                            <td>v1.0</td>
-                                            <td><span class="badge badge-success">Active</span></td>
-                                            <td>
-                                                <a href="#" class="btn btn-app bg-primary">
-                                                    <i class="fa fa-info"></i>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <a href="#" class="btn btn-app bg-danger">
-                                                    <i class="fa fa-trash-o"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="col-md-2 ">
-                                <button type="button" class="btn btn-block btn-success float-right" data-toggle="modal" data-target="#exampleModalCenter">Add device</button>
-
-                                <!-- Modal -->
-                                <div class="modal fade just-margin-top" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header float-right">
-                                                <h4 class="modal-title">Enter your device details</h4>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form>
-                                                    <div class="col-md-12">
-                                                        <div class="card card-danger">
-                                                            <div class="card-body">
-                                                                <div class="form-group">
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-prepend">
-                                                                            <span class="input-group-text"><i class="fa fa-user"></i></span>
-                                                                        </div>
-                                                                        <input type="text" class="form-control" placeholder="Device ID">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-prepend">
-                                                                            <span class="input-group-text"><i class="fa fa-list"></i></span>
-                                                                        </div>
-                                                                        <input type="text" class="form-control" placeholder="Device Version">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-prepend">
-                                                                            <span class="input-group-text"><i class="fa fa-microchip"></i></span>
-                                                                        </div>
-                                                                        <input type="text" class="form-control" placeholder="Device Name">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-prepend">
-                                                                            <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
-                                                                        </div>
-                                                                        <input type="text" class="form-control" placeholder="Device Location">
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">close</button>
-                                                        <div class="just-space"></div>
-                                                        <button type="button" class="btn btn-success" data-dismiss="modal">Add</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Footer -->
+                    <div class="row mt-5 mb-3">
+                        <div class="col-12 text-center" style="color: #6c757d; font-size: 0.9rem;">
+                            <hr style="border-top: 1px solid #eaeaea; margin-bottom: 20px;">
+                            <strong>&copy; 2026 Panel de Control IoT.</strong> Diseñado para monitoreo MQTT de ESP32 y Arduino.
                         </div>
                     </div>
                 </div>
@@ -926,6 +979,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
     <script src="assets/plugins/morris/morris.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function () {
             $('.select2').select2()
