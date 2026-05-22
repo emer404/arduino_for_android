@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>control de arduino</title>
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="assets/css/adminlte.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/plugins/font-awesome/css/font-awesome.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="assets/plugins/select2/select2.min.css">
+    <link rel="icon" type="image/png" href="assets/images/icons/favicon.ico" />
+    <!-- bootstrap wysihtml5 - text editor -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="assets/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
+    <!-- library for persian date picker -->
+    <link type="text/css" rel="stylesheet" href="assets/plugins/kamadatepicker/kamadatepicker.min.css" />
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.min.js"></script>
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.holidays.js"></script>
+    <link rel="stylesheet" href="assets/css/custom-style.css">
+
+    <style>
+        /* Custom UI Components */
+        .device-control-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .device-control-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        .device-icon-container {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .icon-fan { background-color: #e3f2fd; color: #1e88e5; }
+        .icon-plug { background-color: #f3e5f5; color: #8e24aa; }
+
+        .device-meta {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .device-meta h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0 0 4px 0;
+        }
+        .device-meta p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 0 0 2px 0;
+        }
+        .status-badge-inline {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            height: fit-content;
+        }
+        .switch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        /* The Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 130px;
+            height: 46px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e53935; /* OFF Red */
+            transition: .3s;
+            border-radius: 46px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 38px;
+            width: 38px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #43a047; /* ON Green */
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(84px);
+        }
+        .switch-text {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            z-index: 1;
+            transition: .3s;
+        }
+        .text-off { right: -15px; }
+        .text-on { left: -15px; opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-off { opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-on { opacity: 1; }
+
+        .status-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .state-off { color: #e53935; }
+        .state-off .dot { background-color: #e53935; }
+        .state-on { color: #43a047; }
+        .state-on .dot { background-color: #43a047; }
+
+        .card-bottom-row {
+            border-top: 1px solid #f1f1f1;
+            padding-top: 15px;
+            font-size: 0.8rem;
+            color: #9e9e9e;
+        }
+
+        /* Recent Activities */
+        .recent-activity-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .activity-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f4f4f4;
+            display: flex;
+            align-items: flex-start;
+            transition: background-color 0.2s ease;
+        }
+        .activity-item:hover {
+            background-color: #f8f9fa;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 18px;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .bg-gradient-success { background: linear-gradient(135deg, #43a047, #2e7d32); }
+        .bg-gradient-danger { background: linear-gradient(135deg, #e53935, #c62828); }
+        .bg-gradient-info { background: linear-gradient(135deg, #00acc1, #00838f); }
+        .activity-content {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .activity-time {
+            font-size: 0.8rem;
+            color: #9e9e9e;
+            font-weight: normal;
+        }
+        .activity-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.85rem;
+            padding-top: 12px;
+            border-top: 1px dashed #eaeaea;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+        }
+        .status-value {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        .status-on {
+            color: #2e7d32;
+        }
+        .status-off {
+            color: #c62828;
+        }
+        .status-info {
+            color: #00838f;
+        }
+        .status-date {
+            color: #6c757d;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand bg-white navbar-light border-bottom">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- left logo -->
+            <ul class="navbar-nav mr-auto">
+                <a href="#" class="brand-link">
+                    <img src="assets/images/arduino-logo.png" alt="Logo" class="brand-image" style="opacity: .8; max-width: 150px; height: auto;">
+                </a>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center pr-3">
+                    <span id="mqttStatusBadge" class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">🔴 Desconectado</span>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light text-center">control arduino</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div>
+                    <!-- Sidebar user panel -->
+                    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                        <div class="image">
+                            <img src="assets/images/Avatars/Avatar 1.jpg" class="img-circle elevation-2" alt="User Image" style="width: 2.5rem; height: 2.5rem;">
+                        </div>
+                        <div class="info">
+                            <a href="#" class="d-block">Usuario Administrador</a>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Menu -->
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                            <li class="nav-item">
+                                <a href="dashboard.html" class="nav-link">
+                                    <i class="nav-icon fa fa-home"></i>
+                                    <p>Inicio</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">PANEL IOT</li>
+
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fa fa-plug"></i>
+                                    <p>Conexión <i class="right fa fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: none; padding-left: 15px;">
+                                    <li class="nav-item">
+                                        <a href="config_mqtt.html" class="nav-link">
+                                            <i class="fa fa-wifi nav-icon"></i>
+                                            <p>MQTT</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-globe nav-icon"></i>
+                                            <p>HTTP</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-ellipsis-h nav-icon"></i>
+                                            <p>Otros</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#control-section" class="nav-link">
+                                    <i class="nav-icon fa fa-sliders"></i>
+                                    <p>Control de Arduino</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#activities-section" class="nav-link">
+                                    <i class="nav-icon fa fa-history"></i>
+                                    <p>Actividades Recientes</p>
+                                </a>
+                            </li>
+
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">SISTEMA</li>
+
+                            <li class="nav-item">
+                                <a href="login.html" class="nav-link exit">
+                                    <i class="nav-icon fa fa-sign-out text-danger"></i>
+                                    <p>Cerrar Sesión</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 text-dark">control de arduino</h1>
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Hero Banner -->
+            <div class="container-fluid mb-4 mt-2">
+                <div id="heroCarousel" class="carousel slide" data-ride="carousel" data-interval="3000" style="height: 300px;">
+                    <ol class="carousel-indicators">
+                        <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#heroCarousel" data-slide-to="1"></li>
+                        <li data-target="#heroCarousel" data-slide-to="2"></li>
+                    </ol>
+                    <div class="carousel-inner" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); height: 300px;">
+                        <div class="carousel-item active" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(0, 77, 64, 0.7); color: #00e676; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(0, 230, 118, 0.3);">Sistema Inteligente</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Controla tus dispositivos Arduino</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #00e676; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">en tiempo real</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Monitorea, controla y automatiza tus proyectos IoT de manera fácil y segura desde cualquier lugar.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(49, 27, 146, 0.7); color: #b388ff; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(179, 136, 255, 0.3);">Análisis de Datos</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Visualiza métricas y gráficos</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #b388ff; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">con precisión</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Exporta tus reportes en PDF y Excel para un análisis detallado del entorno.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(191, 54, 12, 0.7); color: #ff9e80; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(255, 158, 128, 0.3);">Alertas</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Recibe notificaciones</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #ff9e80; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">al instante</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Configura umbrales de sensores para proteger tus dispositivos Arduino.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- main content body -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- MQTT Configuration Section -->
+                    <div id="mqtt-section" class="row mb-4 mt-2">
+                        <div class="col-12">
+                            <div class="card" style="border-radius: 14px; border: 1px solid #eaeaea; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                                <div class="card-header bg-white border-0 pt-4 pb-2" style="border-radius: 14px 14px 0 0;">
+                                    <h3 class="card-title font-weight-bold" style="color: #333; font-size: 1.3rem;">
+                                        <i class="fa fa-wifi text-primary mr-2"></i>Configuración de Conexión MQTT
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="mqttHost" style="color: #555; font-weight: 600;">Servidor (Host) WebSockets</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-server text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" id="mqttHost" placeholder="ej. broker.hivemq.com">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="mqttPort" style="color: #555; font-weight: 600;">Puerto (Port)</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-plug text-muted"></i></span>
+                                                    </div>
+                                                    <input type="number" class="form-control" id="mqttPort" placeholder="ej. 8000">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="mqttSsl" style="color: #555; font-weight: 600;">SSL/TLS</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-lock text-muted"></i></span>
+                                                    </div>
+                                                    <select class="form-control" id="mqttSsl">
+                                                        <option value="false">No</option>
+                                                        <option value="true">Sí</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="mqttTopic" style="color: #555; font-weight: 600;">Tópico Base (Topic)</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-tag text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" id="mqttTopic" placeholder="ej. LED/control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveMqttConfig()"><i class="fa fa-save"></i> Guardar Configuración</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            // Load existing config
+                            document.getElementById('mqttHost').value = localStorage.getItem('mqtt_host') || 'broker.hivemq.com';
+                            document.getElementById('mqttPort').value = localStorage.getItem('mqtt_port') || '8000';
+                            document.getElementById('mqttTopic').value = localStorage.getItem('mqtt_topic') || 'LED/control';
+                            document.getElementById('mqttSsl').value = localStorage.getItem('mqtt_ssl') || 'false';
+                        });
+
+                        function saveMqttConfig() {
+                            const host = document.getElementById('mqttHost').value;
+                            const port = document.getElementById('mqttPort').value;
+                            const topic = document.getElementById('mqttTopic').value;
+                            const ssl = document.getElementById('mqttSsl').value;
+
+                            localStorage.setItem('mqtt_host', host);
+                            localStorage.setItem('mqtt_port', port);
+                            localStorage.setItem('mqtt_topic', topic);
+                            localStorage.setItem('mqtt_ssl', ssl);
+
+                            if(typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Configuración Guardada',
+                                    text: 'Los parámetros MQTT se han guardado correctamente.',
+                                    confirmButtonColor: '#43a047'
+                                }).then(() => {
+                                    window.location.href = 'dashboard.html';
+                                });
+                            } else {
+                                alert('Configuración guardada correctamente.');
+                                window.location.href = 'dashboard.html';
+                            }
+                        }
+                    </script>
+
+                    <!-- Footer -->
+                    <div class="row mt-5 mb-3">
+                        <div class="col-12 text-center" style="color: #6c757d; font-size: 0.9rem;">
+                            <hr style="border-top: 1px solid #eaeaea; margin-bottom: 20px;">
+                            <strong>&copy; 2026 Panel de Control IoT.</strong> Diseñado para monitoreo MQTT de ESP32 y Arduino.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>$.widget.bridge('uibutton', $.ui.button)</script>
+    <script src="assets/plugins/select2/select2.full.min.js"></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/plugins/knob/jquery.knob.js"></script>
+    <script src="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+    <script src="assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="assets/plugins/fastclick/fastclick.js"></script>
+    <script src="assets/js/adminlte.js"></script>
+    <script src="assets/plugins/chartjs-old/Chart.min.js"></script>
+
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/jquery/jquery.easing.min.js"></script>
+    <script src="assets/js/ruang-admin.min.js"></script>
+    <script src="assets/plugins/chart.js/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <script>
+        var customOptions = {
+            placeholder: "day/month/year"
+            , twodigit: false
+            , closeAfterSelect: false
+            , nextButtonIcon: "fa fa-arrow-circle-right"
+            , previousButtonIcon: "fa fa-arrow-circle-left"
+            , buttonsColor: "green"
+            , forceFarsiDigits: true
+            , markToday: true
+            , markHolidays: true
+            , highlightSelectedDay: true
+            , sync: true
+            , gotoToday: true
+        }
+        if (document.getElementById('date1')) kamaDatepicker('date1', customOptions);
+        if (document.getElementById('date2')) kamaDatepicker('date2', customOptions);
+    </script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="assets/plugins/morris/morris.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(function () {
+            $('.select2').select2()
+        })
+    </script>
+</body>
+</html>

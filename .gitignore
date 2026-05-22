@@ -242,4 +242,24 @@ cython_debug/
 pyvenv.cfg
 pip-selfcheck.json
 
+### ESP32/Arduino Project ###
+# Archivos de configuración con credenciales
+config_secrets.h
+secrets.h
+credentials.h
+
+# Archivos compilados de Arduino
+*.cpp.o
+*.a
+*.hex
+*.elf
+*.lss
+*.map
+*.sym
+
+# Archivos temporales de Arduino
+*.bak
+*.backup
+*~
+
 # End of https://www.toptal.com/developers/gitignore/api/django,python,venv

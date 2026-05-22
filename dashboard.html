@@ -281,6 +281,15 @@
                     <img src="assets/images/arduino-logo.png" alt="Logo" class="brand-image" style="opacity: .8; max-width: 150px; height: auto;">
                 </a>
             </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center pr-2">
+                    <button id="btnMqttConnect" class="btn btn-sm btn-success mr-2" onclick="simulateMqttConnect()"><i class="fa fa-link"></i> Conectar</button>
+                    <button id="btnMqttDisconnect" class="btn btn-sm btn-outline-danger mr-2" onclick="simulateMqttDisconnect()" disabled><i class="fa fa-unlink"></i> Desconectar</button>
+                </li>
+                <li class="nav-item d-flex align-items-center pr-3">
+                    <span id="mqttStatusBadge" class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">🔴 Desconectado</span>
+                </li>
+            </ul>
         </nav>
         <!-- /.navbar -->
 
@@ -309,7 +318,7 @@
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="dashboard.html" class="nav-link">
                                     <i class="nav-icon fa fa-home"></i>
                                     <p>Inicio</p>
                                 </a>
@@ -317,11 +326,31 @@
 
                             <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">PANEL IOT</li>
 
-                            <li class="nav-item">
-                                <a href="#mqtt-section" class="nav-link">
-                                    <i class="nav-icon fa fa-wifi"></i>
-                                    <p>Configuración MQTT</p>
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fa fa-plug"></i>
+                                    <p>Conexión <i class="right fa fa-angle-left"></i></p>
                                 </a>
+                                <ul class="nav nav-treeview" style="display: none; padding-left: 15px;">
+                                    <li class="nav-item">
+                                        <a href="config_mqtt.html" class="nav-link">
+                                            <i class="fa fa-wifi nav-icon"></i>
+                                            <p>MQTT</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-globe nav-icon"></i>
+                                            <p>HTTP</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-ellipsis-h nav-icon"></i>
+                                            <p>Otros</p>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
 
                             <li class="nav-item">
@@ -430,76 +459,7 @@
             <section class="content">
                 <div class="container-fluid">
 
-                    <!-- MQTT Configuration Section -->
-                    <div id="mqtt-section" class="row mb-4 mt-2" style="scroll-margin-top: 70px;">
-                        <div class="col-12">
-                            <div class="card" style="border-radius: 14px; border: 1px solid #eaeaea; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-                                <div class="card-header bg-white border-0 pt-4 pb-2" style="border-radius: 14px 14px 0 0;">
-                                    <h3 class="card-title font-weight-bold" style="color: #333; font-size: 1.3rem;">
-                                        <i class="fa fa-wifi text-primary mr-2"></i>Configuración de Conexión MQTT
-                                    </h3>
-                                    <div class="card-tools">
-                                        <span id="mqttStatusBadge" class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">🔴 Desconectado</span>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label for="mqttHost" style="color: #555; font-weight: 600;">Servidor (Host) WebSockets</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text bg-white"><i class="fa fa-server text-muted"></i></span>
-                                                    </div>
-                                                    <input type="text" class="form-control" id="mqttHost" placeholder="ej. broker.hivemq.com" value="broker.hivemq.com">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label for="mqttPort" style="color: #555; font-weight: 600;">Puerto (Port)</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text bg-white"><i class="fa fa-plug text-muted"></i></span>
-                                                    </div>
-                                                    <input type="number" class="form-control" id="mqttPort" placeholder="ej. 8000" value="8000">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label for="mqttSsl" style="color: #555; font-weight: 600;">SSL/TLS</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text bg-white"><i class="fa fa-lock text-muted"></i></span>
-                                                    </div>
-                                                    <select class="form-control" id="mqttSsl">
-                                                        <option value="false">No</option>
-                                                        <option value="true">Sí</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label for="mqttTopic" style="color: #555; font-weight: 600;">Tópico Base (Topic)</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text bg-white"><i class="fa fa-tag text-muted"></i></span>
-                                                    </div>
-                                                    <input type="text" class="form-control" id="mqttTopic" placeholder="ej. LED/control" value="LED/control">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <button type="button" class="btn btn-success px-4 mr-2 shadow-sm" id="btnMqttConnect" onclick="simulateMqttConnect()"><i class="fa fa-link"></i> Conectar</button>
-                                        <button type="button" class="btn btn-outline-danger px-4 shadow-sm" id="btnMqttDisconnect" onclick="simulateMqttDisconnect()" disabled><i class="fa fa-unlink"></i> Desconectar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Sección de Control de Arduino movida más arriba -->
 
                     <script>
                         // MQTT client instance
@@ -508,10 +468,10 @@
 
                         // MQTT connection over WebSockets
                         function connectMqtt() {
-                            const host = document.getElementById('mqttHost').value;
-                            const port = document.getElementById('mqttPort').value;
-                            const topic = document.getElementById('mqttTopic').value;
-                            const useSSL = document.getElementById('mqttSsl').value === 'true';
+                            const host = localStorage.getItem('mqtt_host') || 'broker.hivemq.com';
+                            const port = localStorage.getItem('mqtt_port') || '8000';
+                            const topic = localStorage.getItem('mqtt_topic') || 'LED/control';
+                            const useSSL = (localStorage.getItem('mqtt_ssl') || 'false') === 'true';
 
                             // WebSocket URL format: ws://host:port/mqtt or wss://host:port/mqtt for SSL
                             const protocol = useSSL ? 'wss' : 'ws';
@@ -532,11 +492,14 @@
                                     isConnected = true;
 
                                     let badge = document.getElementById('mqttStatusBadge');
-                                    badge.className = 'badge badge-success';
-                                    badge.innerText = '🟢 Conectado';
-
-                                    document.getElementById('btnMqttConnect').disabled = true;
-                                    document.getElementById('btnMqttDisconnect').disabled = false;
+                                    if(badge) {
+                                        badge.className = 'badge badge-success';
+                                        badge.innerText = '🟢 Conectado';
+                                    }
+                                    const btnConnect = document.getElementById('btnMqttConnect');
+                                    if(btnConnect) btnConnect.disabled = true;
+                                    const btnDisconnect = document.getElementById('btnMqttDisconnect');
+                                    if(btnDisconnect) btnDisconnect.disabled = false;
 
                                     Swal.fire({
                                         toast: true,
@@ -548,10 +511,29 @@
                                         timerProgressBar: true
                                     });
 
-                                    // Subscribe to the topic
-                                    mqttClient.subscribe(topic, (err) => {
+                                    // Subscribe to the topics
+                                    mqttClient.subscribe('LED1/status', (err) => {
                                         if (!err) {
-                                            console.log('Subscribed to topic:', topic);
+                                            console.log('Subscribed to LED1 status topic');
+                                        }
+                                    });
+
+                                    mqttClient.subscribe('LED2/status', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to LED2 status topic');
+                                        }
+                                    });
+
+                                    mqttClient.subscribe('LED3/status', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to LED3 status topic');
+                                        }
+                                    });
+
+                                    // Suscribirse también al tópico de temperatura
+                                    mqttClient.subscribe('sensor/temperatura', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to temperature topic: sensor/temperatura');
                                         }
                                     });
                                 });
@@ -562,13 +544,36 @@
 
                                     const payload = message.toString();
 
-                                    // Handle state updates from ESP32
-                                    if (payload === 'ON' || payload === 'OFF') {
-                                        // Update the Arduino control state without republishing
-                                        updateUIState(payload === 'ON');
-                                        addActivityLog('Actualización (MQTT)', 'Se recibió nuevo estado remoto: ' + payload, payload === 'ON');
+                                    // Procesar según el tópico
+                                    if (receivedTopic === 'sensor/temperatura') {
+                                        // Mensaje de temperatura para el gráfico
+                                        const numValue = parseFloat(payload);
+                                        if (!isNaN(numValue)) {
+                                            if(typeof updateChart === 'function') {
+                                                updateChart(numValue);
+                                                console.log('Temperature updated:', numValue, '°C');
+                                            }
+                                        }
+                                    } else if (receivedTopic === 'LED1/status') {
+                                        // Estado del LED1 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(1, payload === 'ON');
+                                            addActivityLog('Actualización LED1 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
+                                    } else if (receivedTopic === 'LED2/status') {
+                                        // Estado del LED2 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(2, payload === 'ON');
+                                            addActivityLog('Actualización LED2 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
+                                    } else if (receivedTopic === 'LED3/status') {
+                                        // Estado del LED3 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(3, payload === 'ON');
+                                            addActivityLog('Actualización LED3 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
                                     } else {
-                                        // Intentar parsear como número o JSON para la gráfica
+                                        // Intentar parsear como número o JSON para compatibilidad
                                         const numValue = parseFloat(payload);
                                         if (!isNaN(numValue) && payload.trim() === numValue.toString()) {
                                             if(typeof updateChart === 'function') updateChart(numValue);
@@ -593,8 +598,10 @@
                                     isConnected = false;
 
                                     let badge = document.getElementById('mqttStatusBadge');
-                                    badge.className = 'badge badge-danger';
-                                    badge.innerText = '❌ Error de conexión';
+                                    if(badge) {
+                                        badge.className = 'badge badge-danger';
+                                        badge.innerText = '❌ Error de conexión';
+                                    }
 
                                     Swal.fire({
                                         toast: true,
@@ -612,12 +619,16 @@
                                     console.log('MQTT connection closed');
                                     isConnected = false;
 
-                                    if (document.getElementById('btnMqttConnect').disabled) {
+                                    if (!isConnected) {
                                         let badge = document.getElementById('mqttStatusBadge');
-                                        badge.className = 'badge badge-secondary';
-                                        badge.innerText = '🔴 Desconectado';
-                                        document.getElementById('btnMqttConnect').disabled = false;
-                                        document.getElementById('btnMqttDisconnect').disabled = true;
+                                        if(badge) {
+                                            badge.className = 'badge badge-secondary';
+                                            badge.innerText = '🔴 Desconectado';
+                                        }
+                                        const btnConnect = document.getElementById('btnMqttConnect');
+                                        if(btnConnect) btnConnect.disabled = false;
+                                        const btnDisconnect = document.getElementById('btnMqttDisconnect');
+                                        if(btnDisconnect) btnDisconnect.disabled = true;
 
                                         Swal.fire({
                                             toast: true,
@@ -634,8 +645,10 @@
                             } catch (error) {
                                 console.error('MQTT connection error:', error);
                                 let badge = document.getElementById('mqttStatusBadge');
-                                badge.className = 'badge badge-danger';
-                                badge.innerText = '❌ Error';
+                                if(badge) {
+                                    badge.className = 'badge badge-danger';
+                                    badge.innerText = '❌ Error';
+                                }
                             }
                         }
 
@@ -656,14 +669,13 @@
                         }
 
                         // Publish message to MQTT topic
-                        function publishMqttMessage(message) {
+                        function publishMqttMessage(topic, message) {
                             if (mqttClient && isConnected) {
-                                const topic = document.getElementById('mqttTopic').value;
                                 mqttClient.publish(topic, message, (err) => {
                                     if (err) {
                                         console.error('Publish error:', err);
                                     } else {
-                                        console.log('Message published:', message);
+                                        console.log('Message published:', message, 'to topic:', topic);
                                     }
                                 });
                             } else {
@@ -679,22 +691,24 @@
                         function simulateMqttDisconnect() {
                             disconnectMqtt();
                         }
+
+                        // Se removió la conexión automática para permitir conexión manual
                     </script>
 
                     <!-- Control Devices Cards Section -->
-                    <h3 id="control-section" class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem; scroll-margin-top: 70px;">Control de Arduino</h3>
+                    <h3 id="control-section" class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem; scroll-margin-top: 70px;">Control de LEDs Arduino</h3>
                     <div class="row mb-4">
-                        <!-- Device 2: Enchufe Oficina -->
-                        <div class="col-md-5 col-lg-4 mb-3">
+                        <!-- LED 1 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
                             <div class="device-control-card">
                                 <div class="card-top-row">
-                                    <div class="device-icon-container icon-plug">
-                                        <i class="fa fa-plug"></i>
+                                    <div class="device-icon-container icon-fan">
+                                        <i class="fa fa-lightbulb-o"></i>
                                     </div>
                                     <div class="device-meta">
-                                        <h4>Arduino</h4>
-                                        <p>ID: dev-03</p>
-                                        <p>Oficina</p>
+                                        <h4>LED 1 (D3)</h4>
+                                        <p>GPIO 3</p>
+                                        <p>Principal</p>
                                     </div>
                                     <div class="status-badge-inline">
                                         En línea
@@ -703,19 +717,91 @@
 
                                 <div class="switch-container">
                                     <label class="toggle-switch">
-                                        <input type="checkbox" checked onchange="toggleState(this, 'stateText2', 'statusDot2')">
+                                        <input type="checkbox" id="led1Switch" onchange="toggleLedState(1, this)">
                                         <span class="toggle-slider">
                                             <span class="switch-text text-off">OFF</span>
                                             <span class="switch-text text-on">ON</span>
                                         </span>
                                     </label>
-                                    <div class="status-label state-on" id="statusDot2">
-                                        <span class="dot"></span> Estado: <span id="stateText2" style="margin-left: 4px;">Encendido</span>
+                                    <div class="status-label state-off" id="led1StatusDot">
+                                        <span class="dot"></span> Estado: <span id="led1StateText" style="margin-left: 4px;">Apagado</span>
                                     </div>
                                 </div>
 
                                 <div class="card-bottom-row">
-                                    Última actualización: 10:24:05 AM
+                                    Tópico: LED1/control
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LED 2 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
+                            <div class="device-control-card">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-plug">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4>LED 2 (D5)</h4>
+                                        <p>GPIO 5</p>
+                                        <p>Secundario</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="led2Switch" onchange="toggleLedState(2, this)">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-off" id="led2StatusDot">
+                                        <span class="dot"></span> Estado: <span id="led2StateText" style="margin-left: 4px;">Apagado</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-bottom-row">
+                                    Tópico: LED2/control
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LED 3 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
+                            <div class="device-control-card">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-fan">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4>LED 3 (D7)</h4>
+                                        <p>GPIO 7</p>
+                                        <p>Terciario</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="led3Switch" onchange="toggleLedState(3, this)">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-off" id="led3StatusDot">
+                                        <span class="dot"></span> Estado: <span id="led3StateText" style="margin-left: 4px;">Apagado</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-bottom-row">
+                                    Tópico: LED3/control
                                 </div>
                             </div>
                         </div>
@@ -882,13 +968,13 @@
                         }
 
                         // Update UI state without publishing (for incoming MQTT messages)
-                        function updateUIState(isOn) {
-                            const checkbox = document.querySelector('#control-section input[type="checkbox"]');
-                            if (checkbox) {
-                                checkbox.checked = isOn;
-                                const textEl = document.getElementById('stateText2');
-                                const containerEl = document.getElementById('statusDot2');
+                        function updateLedUIState(ledNum, isOn) {
+                            const switchEl = document.getElementById('led' + ledNum + 'Switch');
+                            const textEl = document.getElementById('led' + ledNum + 'StateText');
+                            const containerEl = document.getElementById('led' + ledNum + 'StatusDot');
 
+                            if (switchEl && textEl && containerEl) {
+                                switchEl.checked = isOn;
                                 if (isOn) {
                                     textEl.innerText = "Encendido";
                                     containerEl.classList.remove('state-off');
@@ -901,10 +987,10 @@
                             }
                         }
 
-                        function toggleState(checkbox, textId, containerId) {
-                            var textEl = document.getElementById(textId);
-                            var containerEl = document.getElementById(containerId);
+                        function toggleLedState(ledNum, checkbox) {
                             var state = checkbox.checked ? "ON" : "OFF";
+                            const textEl = document.getElementById('led' + ledNum + 'StateText');
+                            const containerEl = document.getElementById('led' + ledNum + 'StatusDot');
 
                             if(checkbox.checked) {
                                 textEl.innerText = "Encendido";
@@ -917,9 +1003,10 @@
                             }
 
                             // Publish state change via MQTT
-                            publishMqttMessage(state);
+                            const topic = 'LED' + ledNum + '/control';
+                            publishMqttMessage(topic, state);
                             // Log the manual action
-                            addActivityLog('Comando Enviado (Web)', 'Se ordenó cambiar el estado a: ' + state, state === 'ON');
+                            addActivityLog('Comando Enviado (Web)', 'LED' + ledNum + ' cambiar a: ' + state, state === 'ON');
                         }
                     </script>
 
