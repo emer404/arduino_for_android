@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="">
-    <meta name="author" content=""> 
-    
+    <meta name="author" content="">
+
     <title>control de arduino</title>
 
     <!-- Theme style -->
@@ -58,7 +58,7 @@
         }
         .icon-fan { background-color: #e3f2fd; color: #1e88e5; }
         .icon-plug { background-color: #f3e5f5; color: #8e24aa; }
-        
+
         .device-meta {
             flex-grow: 1;
             margin-left: 15px;
@@ -143,7 +143,7 @@
         .text-on { left: -15px; opacity: 0; }
         .toggle-switch input:checked + .toggle-slider .text-off { opacity: 0; }
         .toggle-switch input:checked + .toggle-slider .text-on { opacity: 1; }
-        
+
         .status-label {
             font-size: 0.95rem;
             font-weight: 600;
@@ -161,7 +161,7 @@
         .state-off .dot { background-color: #e53935; }
         .state-on { color: #43a047; }
         .state-on .dot { background-color: #43a047; }
-        
+
         .card-bottom-row {
             border-top: 1px solid #f1f1f1;
             padding-top: 15px;
@@ -176,66 +176,77 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             background-color: #fff;
             margin-bottom: 30px;
+            overflow: hidden;
         }
         .activity-item {
-            padding: 15px 20px;
+            padding: 20px 25px;
             border-bottom: 1px solid #f4f4f4;
             display: flex;
             align-items: flex-start;
+            transition: background-color 0.2s ease;
+        }
+        .activity-item:hover {
+            background-color: #f8f9fa;
         }
         .activity-item:last-child {
             border-bottom: none;
         }
         .activity-icon {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
+            margin-right: 18px;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
+            flex-shrink: 0;
         }
         .bg-gradient-success { background: linear-gradient(135deg, #43a047, #2e7d32); }
         .bg-gradient-danger { background: linear-gradient(135deg, #e53935, #c62828); }
         .bg-gradient-info { background: linear-gradient(135deg, #00acc1, #00838f); }
         .activity-content {
             flex-grow: 1;
+            min-width: 0;
         }
         .activity-title {
             font-weight: 600;
             color: #333;
-            margin-bottom: 2px;
+            margin-bottom: 6px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         .activity-time {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #9e9e9e;
             font-weight: normal;
         }
         .activity-desc {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: #6c757d;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
         .activity-status {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 0.8rem;
-            padding-top: 8px;
+            gap: 20px;
+            font-size: 0.85rem;
+            padding-top: 12px;
             border-top: 1px dashed #eaeaea;
         }
         .status-label {
             font-weight: 600;
             color: #495057;
+            white-space: nowrap;
         }
         .status-value {
             font-weight: 500;
             display: flex;
             align-items: center;
+            white-space: nowrap;
         }
         .status-on {
             color: #2e7d32;
@@ -248,7 +259,8 @@
         }
         .status-date {
             color: #6c757d;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -280,64 +292,65 @@
             </a>
 
             <!-- Sidebar -->
-            <div class="sidebar" >
-                <div style="">
+            <div class="sidebar">
+                <div>
                     <!-- Sidebar user panel -->
                     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                         <div class="image">
                             <img src="assets/images/Avatars/Avatar 1.jpg" class="img-circle elevation-2" alt="User Image" style="width: 2.5rem; height: 2.5rem;">
                         </div>
                         <div class="info">
-                            <a href="#" class="d-block">User</a>
+                            <a href="#" class="d-block">Usuario Administrador</a>
                         </div>
                     </div>
 
                     <!-- Sidebar Menu -->
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                            <li class="nav-item has-treeview menu-open">
-                                <a href="#" class="nav-link active">
-                                    <i class="nav-icon fa fa-cog"></i>
-                                    <p>
-                                        <i class="right fa fa-angle-left"></i>
-                                        Devices
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="dashboard.html" class="nav-link">
-                                            <i class="fa fa-plus nav-icon"></i>
-                                            <p>Device Registration</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="#" class="nav-link" data-toggle="modal" data-target="#selectdeviceInfo">
-                                            <i class="fa fa-info nav-icon"></i>
-                                            <p>Realtime Data</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </nav>
-                    
-                    <nav class="mt-2 ">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
                             <li class="nav-item">
-                                <a href="#" class="nav-link active" data-toggle="modal" data-target="#selectdeviceExport">
-                                    <i class="fa fa-info nav-icon"></i>
-                                    <p>Reporting</p>
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fa fa-home"></i>
+                                    <p>Inicio</p>
                                 </a>
                             </li>
-                        </ul>
-                    </nav>
-                    
-                    <nav class="mt-2 ">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                            <li class="nav-item has-treeview menu-open">
-                                <a href="login.html" class="nav-link exit ">
-                                    <i class="nav-icon fa fa-sign-out"></i>
-                                    <p>Sign out</p>
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">PANEL IOT</li>
+
+                            <li class="nav-item">
+                                <a href="#mqtt-section" class="nav-link">
+                                    <i class="nav-icon fa fa-wifi"></i>
+                                    <p>Configuración MQTT</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#control-section" class="nav-link">
+                                    <i class="nav-icon fa fa-sliders"></i>
+                                    <p>Control de Arduino</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#activities-section" class="nav-link">
+                                    <i class="nav-icon fa fa-history"></i>
+                                    <p>Actividades Recientes</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#table-section" class="nav-link">
+                                    <i class="nav-icon fa fa-list-ul"></i>
+                                    <p>Inventario de Dispositivos</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">SISTEMA</li>
+
+                            <li class="nav-item">
+                                <a href="login.html" class="nav-link exit">
+                                    <i class="nav-icon fa fa-sign-out text-danger"></i>
+                                    <p>Cerrar Sesión</p>
                                 </a>
                             </li>
                         </ul>
@@ -384,7 +397,7 @@
                                 <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Monitorea, controla y automatiza tus proyectos IoT de manera fácil y segura desde cualquier lugar.</p>
                             </div>
                         </div>
-                        
+
                         <!-- Slide 2 -->
                         <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
@@ -407,7 +420,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev" style="width: 5%; opacity: 1;">
                         <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                             <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
@@ -426,9 +439,212 @@
             <!-- main content body -->
             <section class="content">
                 <div class="container-fluid">
-                    
+
+                    <!-- MQTT Configuration Section -->
+                    <div id="mqtt-section" class="row mb-4 mt-2" style="scroll-margin-top: 70px;">
+                        <div class="col-12">
+                            <div class="card" style="border-radius: 14px; border: 1px solid #eaeaea; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                                <div class="card-header bg-white border-0 pt-4 pb-2" style="border-radius: 14px 14px 0 0;">
+                                    <h3 class="card-title font-weight-bold" style="color: #333; font-size: 1.3rem;">
+                                        <i class="fa fa-wifi text-primary mr-2"></i>Configuración de Conexión MQTT
+                                    </h3>
+                                    <div class="card-tools">
+                                        <span id="mqttStatusBadge" class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">🔴 Desconectado</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="mqttHost" style="color: #555; font-weight: 600;">Servidor (Host) WebSockets</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-server text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" id="mqttHost" placeholder="ej. broker.hivemq.com" value="broker.hivemq.com">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="mqttPort" style="color: #555; font-weight: 600;">Puerto (Port)</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-plug text-muted"></i></span>
+                                                    </div>
+                                                    <input type="number" class="form-control" id="mqttPort" placeholder="ej. 8000" value="8000">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="mqttSsl" style="color: #555; font-weight: 600;">SSL/TLS</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-lock text-muted"></i></span>
+                                                    </div>
+                                                    <select class="form-control" id="mqttSsl">
+                                                        <option value="false">No</option>
+                                                        <option value="true">Sí</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="mqttTopic" style="color: #555; font-weight: 600;">Tópico Base (Topic)</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-tag text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" id="mqttTopic" placeholder="ej. LED/control" value="LED/control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-success px-4 mr-2 shadow-sm" id="btnMqttConnect" onclick="simulateMqttConnect()"><i class="fa fa-link"></i> Conectar</button>
+                                        <button type="button" class="btn btn-outline-danger px-4 shadow-sm" id="btnMqttDisconnect" onclick="simulateMqttDisconnect()" disabled><i class="fa fa-unlink"></i> Desconectar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        // MQTT client instance
+                        let mqttClient = null;
+                        let isConnected = false;
+
+                        // MQTT connection over WebSockets
+                        function connectMqtt() {
+                            const host = document.getElementById('mqttHost').value;
+                            const port = document.getElementById('mqttPort').value;
+                            const topic = document.getElementById('mqttTopic').value;
+                            const useSSL = document.getElementById('mqttSsl').value === 'true';
+
+                            // WebSocket URL format: ws://host:port/mqtt or wss://host:port/mqtt for SSL
+                            const protocol = useSSL ? 'wss' : 'ws';
+                            const wsUrl = `${protocol}://${host}:${port}/mqtt`;
+
+                            try {
+                                // Create MQTT client with WebSocket transport
+                                mqttClient = mqtt.connect(wsUrl, {
+                                    clientId: 'mqtt-dashboard-' + Math.random().toString(16).substr(2, 8),
+                                    clean: true,
+                                    connectTimeout: 4000,
+                                    reconnectPeriod: 1000
+                                });
+
+                                // Connection successful
+                                mqttClient.on('connect', () => {
+                                    console.log('MQTT connected successfully');
+                                    isConnected = true;
+
+                                    let badge = document.getElementById('mqttStatusBadge');
+                                    badge.className = 'badge badge-success';
+                                    badge.innerText = '🟢 Conectado';
+
+                                    document.getElementById('btnMqttConnect').disabled = true;
+                                    document.getElementById('btnMqttDisconnect').disabled = false;
+
+                                    // Subscribe to the topic
+                                    mqttClient.subscribe(topic, (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to topic:', topic);
+                                        }
+                                    });
+                                });
+
+                                // Handle incoming messages
+                                mqttClient.on('message', (receivedTopic, message) => {
+                                    console.log('Received message:', receivedTopic, message.toString());
+
+                                    const payload = message.toString();
+
+                                    // Handle state updates from ESP32
+                                    if (payload === 'ON' || payload === 'OFF') {
+                                        // Update the Arduino control state without republishing
+                                        updateUIState(payload === 'ON');
+                                    }
+                                });
+
+                                // Connection error
+                                mqttClient.on('error', (err) => {
+                                    console.error('MQTT connection error:', err);
+                                    isConnected = false;
+
+                                    let badge = document.getElementById('mqttStatusBadge');
+                                    badge.className = 'badge badge-danger';
+                                    badge.innerText = '❌ Error de conexión';
+                                });
+
+                                // Handle disconnection
+                                mqttClient.on('close', () => {
+                                    console.log('MQTT connection closed');
+                                    isConnected = false;
+
+                                    if (document.getElementById('btnMqttConnect').disabled) {
+                                        let badge = document.getElementById('mqttStatusBadge');
+                                        badge.className = 'badge badge-secondary';
+                                        badge.innerText = '🔴 Desconectado';
+                                        document.getElementById('btnMqttConnect').disabled = false;
+                                        document.getElementById('btnMqttDisconnect').disabled = true;
+                                    }
+                                });
+
+                            } catch (error) {
+                                console.error('MQTT connection error:', error);
+                                let badge = document.getElementById('mqttStatusBadge');
+                                badge.className = 'badge badge-danger';
+                                badge.innerText = '❌ Error';
+                            }
+                        }
+
+                        // Disconnect MQTT
+                        function disconnectMqtt() {
+                            if (mqttClient) {
+                                mqttClient.end();
+                                mqttClient = null;
+                            }
+
+                            isConnected = false;
+
+                            let badge = document.getElementById('mqttStatusBadge');
+                            badge.className = 'badge badge-secondary';
+                            badge.innerText = '🔴 Desconectado';
+                            document.getElementById('btnMqttConnect').disabled = false;
+                            document.getElementById('btnMqttDisconnect').disabled = true;
+                        }
+
+                        // Publish message to MQTT topic
+                        function publishMqttMessage(message) {
+                            if (mqttClient && isConnected) {
+                                const topic = document.getElementById('mqttTopic').value;
+                                mqttClient.publish(topic, message, (err) => {
+                                    if (err) {
+                                        console.error('Publish error:', err);
+                                    } else {
+                                        console.log('Message published:', message);
+                                    }
+                                });
+                            } else {
+                                console.warn('MQTT not connected');
+                            }
+                        }
+
+                        // Wrapper functions for button onclick handlers
+                        function simulateMqttConnect() {
+                            connectMqtt();
+                        }
+
+                        function simulateMqttDisconnect() {
+                            disconnectMqtt();
+                        }
+                    </script>
+
                     <!-- Control Devices Cards Section -->
-                    <h3 class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem;">Control de Arduino</h3>
+                    <h3 id="control-section" class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem; scroll-margin-top: 70px;">Control de Arduino</h3>
                     <div class="row mb-4">
                         <!-- Device 2: Enchufe Oficina -->
                         <div class="col-md-5 col-lg-4 mb-3">
@@ -446,7 +662,7 @@
                                         En línea
                                     </div>
                                 </div>
-                                
+
                                 <div class="switch-container">
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked onchange="toggleState(this, 'stateText2', 'statusDot2')">
@@ -459,7 +675,7 @@
                                         <span class="dot"></span> Estado: <span id="stateText2" style="margin-left: 4px;">Encendido</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="card-bottom-row">
                                     Última actualización: 10:24:05 AM
                                 </div>
@@ -467,7 +683,9 @@
                         </div>
 
                         <!-- Recent Activities Section -->
-                        <div class="col-md-7 col-lg-8 mb-3">                            <div class="recent-activity-card">
+                    <div id="activities-section" class="row" style="scroll-margin-top: 70px;">
+                        <div class="col-12 mb-3">
+                            <div class="recent-activity-card">
                                 <div class="card-header border-0 bg-transparent" style="padding: 20px 24px 10px;">
                                     <h3 class="card-title font-weight-bold m-0" style="color: #333; font-size: 1.3rem;">Actividades Recientes</h3>
                                 </div>
@@ -489,7 +707,7 @@
                                             </div>
                                         </div>
                                     </div>
-                    
+
 
                                     <div class="activity-item">
                                         <div class="activity-icon bg-gradient-info">
@@ -512,11 +730,33 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <script>
+                        // Update UI state without publishing (for incoming MQTT messages)
+                        function updateUIState(isOn) {
+                            const checkbox = document.querySelector('#control-section input[type="checkbox"]');
+                            if (checkbox) {
+                                checkbox.checked = isOn;
+                                const textEl = document.getElementById('stateText2');
+                                const containerEl = document.getElementById('statusDot2');
+
+                                if (isOn) {
+                                    textEl.innerText = "Encendido";
+                                    containerEl.classList.remove('state-off');
+                                    containerEl.classList.add('state-on');
+                                } else {
+                                    textEl.innerText = "Apagado";
+                                    containerEl.classList.remove('state-on');
+                                    containerEl.classList.add('state-off');
+                                }
+                            }
+                        }
+
                         function toggleState(checkbox, textId, containerId) {
                             var textEl = document.getElementById(textId);
                             var containerEl = document.getElementById(containerId);
+                            var state = checkbox.checked ? "ON" : "OFF";
+
                             if(checkbox.checked) {
                                 textEl.innerText = "Encendido";
                                 containerEl.classList.remove('state-off');
@@ -526,10 +766,13 @@
                                 containerEl.classList.remove('state-on');
                                 containerEl.classList.add('state-off');
                             }
+
+                            // Publish state change via MQTT
+                            publishMqttMessage(state);
                         }
                     </script>
 
-                    <div class="row">
+                    <div id="table-section" class="row" style="scroll-margin-top: 70px;">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
@@ -651,13 +894,14 @@
     <script src="assets/plugins/fastclick/fastclick.js"></script>
     <script src="assets/js/adminlte.js"></script>
     <script src="assets/plugins/chartjs-old/Chart.min.js"></script>
-    
+
     <script src="assets/vendor/jquery/jquery.min.js"></script>
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/jquery/jquery.easing.min.js"></script>
     <script src="assets/js/ruang-admin.min.js"></script>
     <script src="assets/plugins/chart.js/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
     <script>
         var customOptions = {
