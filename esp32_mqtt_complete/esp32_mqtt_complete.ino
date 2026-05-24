@@ -26,8 +26,8 @@
 // CONFIGURACIÓN WIFI - VALORES POR DEFECTO
 // ============================================
 #ifndef WIFI_SSID
-  #define WIFI_SSID "TU_SSID"
-  #define WIFI_PASSWORD "TU_PASSWORD"
+  #define WIFI_SSID "Arduinogrupo2"
+  #define WIFI_PASSWORD "9876543201"
 #endif
 
 // ============================================
@@ -35,7 +35,7 @@
 // ============================================
 #ifndef MQTT_BROKER
   #define MQTT_BROKER "broker.hivemq.com"
-  #define MQTT_PORT 1883
+  #define MQTT_PORT 8000
 #endif
 
 // Tópicos MQTT para cada LED

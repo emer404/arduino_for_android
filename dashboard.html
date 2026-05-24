@@ -59,6 +59,19 @@
         .icon-fan { background-color: #e3f2fd; color: #1e88e5; }
         .icon-plug { background-color: #f3e5f5; color: #8e24aa; }
 
+        /* Colores específicos para LEDs */
+        .icon-led1 { background-color: #ffebee; color: #e53935; border: 2px solid #ef9a9a; }
+        .icon-led2 { background-color: #e8f5e9; color: #43a047; border: 2px solid #a5d6a7; }
+        .icon-led3 { background-color: #e3f2fd; color: #1e88e5; border: 2px solid #90caf9; }
+
+        .card-led1 { border-left: 4px solid #e53935; }
+        .card-led2 { border-left: 4px solid #43a047; }
+        .card-led3 { border-left: 4px solid #1e88e5; }
+
+        .status-led1 { color: #e53935; }
+        .status-led2 { color: #43a047; }
+        .status-led3 { color: #1e88e5; }
+
         .device-meta {
             flex-grow: 1;
             margin-left: 15px;
@@ -700,13 +713,13 @@
                     <div class="row mb-4">
                         <!-- LED 1 -->
                         <div class="col-md-4 col-lg-4 mb-3">
-                            <div class="device-control-card">
+                            <div class="device-control-card card-led1">
                                 <div class="card-top-row">
-                                    <div class="device-icon-container icon-fan">
+                                    <div class="device-icon-container icon-led1">
                                         <i class="fa fa-lightbulb-o"></i>
                                     </div>
                                     <div class="device-meta">
-                                        <h4>LED 1 (D3)</h4>
+                                        <h4 style="color: #e53935;">LED 1 (D3)</h4>
                                         <p>GPIO 3</p>
                                         <p>Principal</p>
                                     </div>
@@ -724,25 +737,25 @@
                                         </span>
                                     </label>
                                     <div class="status-label state-off" id="led1StatusDot">
-                                        <span class="dot"></span> Estado: <span id="led1StateText" style="margin-left: 4px;">Apagado</span>
+                                        <span class="dot" style="background-color: #e53935;"></span> Estado: <span id="led1StateText" style="margin-left: 4px;">Apagado</span>
                                     </div>
                                 </div>
 
                                 <div class="card-bottom-row">
-                                    Tópico: LED1/control
+                                    <span style="color: #e53935;">Tópico: LED1/control</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- LED 2 -->
                         <div class="col-md-4 col-lg-4 mb-3">
-                            <div class="device-control-card">
+                            <div class="device-control-card card-led2">
                                 <div class="card-top-row">
-                                    <div class="device-icon-container icon-plug">
+                                    <div class="device-icon-container icon-led2">
                                         <i class="fa fa-lightbulb-o"></i>
                                     </div>
                                     <div class="device-meta">
-                                        <h4>LED 2 (D5)</h4>
+                                        <h4 style="color: #43a047;">LED 2 (D5)</h4>
                                         <p>GPIO 5</p>
                                         <p>Secundario</p>
                                     </div>
@@ -760,25 +773,25 @@
                                         </span>
                                     </label>
                                     <div class="status-label state-off" id="led2StatusDot">
-                                        <span class="dot"></span> Estado: <span id="led2StateText" style="margin-left: 4px;">Apagado</span>
+                                        <span class="dot" style="background-color: #43a047;"></span> Estado: <span id="led2StateText" style="margin-left: 4px;">Apagado</span>
                                     </div>
                                 </div>
 
                                 <div class="card-bottom-row">
-                                    Tópico: LED2/control
+                                    <span style="color: #43a047;">Tópico: LED2/control</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- LED 3 -->
                         <div class="col-md-4 col-lg-4 mb-3">
-                            <div class="device-control-card">
+                            <div class="device-control-card card-led3">
                                 <div class="card-top-row">
-                                    <div class="device-icon-container icon-fan">
+                                    <div class="device-icon-container icon-led3">
                                         <i class="fa fa-lightbulb-o"></i>
                                     </div>
                                     <div class="device-meta">
-                                        <h4>LED 3 (D7)</h4>
+                                        <h4 style="color: #1e88e5;">LED 3 (D7)</h4>
                                         <p>GPIO 7</p>
                                         <p>Terciario</p>
                                     </div>
@@ -796,12 +809,12 @@
                                         </span>
                                     </label>
                                     <div class="status-label state-off" id="led3StatusDot">
-                                        <span class="dot"></span> Estado: <span id="led3StateText" style="margin-left: 4px;">Apagado</span>
+                                        <span class="dot" style="background-color: #1e88e5;"></span> Estado: <span id="led3StateText" style="margin-left: 4px;">Apagado</span>
                                     </div>
                                 </div>
 
                                 <div class="card-bottom-row">
-                                    Tópico: LED3/control
+                                    <span style="color: #1e88e5;">Tópico: LED3/control</span>
                                 </div>
                             </div>
                         </div>
