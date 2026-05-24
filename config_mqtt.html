@@ -465,6 +465,24 @@
                                     </h3>
                                 </div>
                                 <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="mqttPreset" style="color: #555; font-weight: 600;">Servidor MQTT Preestablecido</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fa fa-cloud text-muted"></i></span>
+                                                    </div>
+                                                    <select class="form-control" id="mqttPreset" onchange="applyPreset()">
+                                                        <option value="hive">HiveMQ (broker.hivemq.com)</option>
+                                                        <option value="emqx">EMQX (broker.emqx.io)</option>
+                                                        <option value="mosquitto">Mosquitto (test.mosquitto.org)</option>
+                                                        <option value="custom">Personalizado / Otro</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
@@ -529,14 +547,61 @@
                             document.getElementById('mqttPort').value = localStorage.getItem('mqtt_port') || '8000';
                             document.getElementById('mqttTopic').value = localStorage.getItem('mqtt_topic') || 'LED/control';
                             document.getElementById('mqttSsl').value = localStorage.getItem('mqtt_ssl') || 'false';
+                            
+                            const preset = localStorage.getItem('mqtt_preset') || 'hive';
+                            document.getElementById('mqttPreset').value = preset;
+                            checkCustomState();
                         });
 
+                        function applyPreset() {
+                            const preset = document.getElementById('mqttPreset').value;
+                            const hostInput = document.getElementById('mqttHost');
+                            const portInput = document.getElementById('mqttPort');
+                            const sslSelect = document.getElementById('mqttSsl');
+
+                            if (preset === 'hive') {
+                                hostInput.value = 'broker.hivemq.com';
+                                portInput.value = '8000';
+                                sslSelect.value = 'false';
+                            } else if (preset === 'emqx') {
+                                hostInput.value = 'broker.emqx.io';
+                                portInput.value = '8083';
+                                sslSelect.value = 'false';
+                            } else if (preset === 'mosquitto') {
+                                hostInput.value = 'test.mosquitto.org';
+                                portInput.value = '8080'; // 8080 para WS (sin SSL), 8081 para WSS (con SSL)
+                                sslSelect.value = 'false';
+                            }
+                            
+                            checkCustomState();
+                        }
+                        
+                        function checkCustomState() {
+                            const preset = document.getElementById('mqttPreset').value;
+                            const isCustom = preset === 'custom';
+                            document.getElementById('mqttHost').readOnly = !isCustom;
+                            document.getElementById('mqttPort').readOnly = !isCustom;
+                            document.getElementById('mqttSsl').disabled = !isCustom;
+                            
+                            // Si se deshabilita, quitar clase o añadir clase visual para que se note
+                            const inputs = [document.getElementById('mqttHost'), document.getElementById('mqttPort')];
+                            inputs.forEach(input => {
+                                if (!isCustom) {
+                                    input.style.backgroundColor = '#f8f9fa';
+                                } else {
+                                    input.style.backgroundColor = '#fff';
+                                }
+                            });
+                        }
+
                         function saveMqttConfig() {
+                            const preset = document.getElementById('mqttPreset').value;
                             const host = document.getElementById('mqttHost').value;
                             const port = document.getElementById('mqttPort').value;
                             const topic = document.getElementById('mqttTopic').value;
                             const ssl = document.getElementById('mqttSsl').value;
 
+                            localStorage.setItem('mqtt_preset', preset);
                             localStorage.setItem('mqtt_host', host);
                             localStorage.setItem('mqtt_port', port);
                             localStorage.setItem('mqtt_topic', topic);
