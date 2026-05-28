@@ -275,6 +275,97 @@
             font-size: 0.8rem;
             white-space: nowrap;
         }
+        /* ===== Team Section in Sidebar ===== */
+        .sidebar-team-section {
+            margin: 10px 8px 8px 8px;
+            padding: 14px 12px 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .sidebar-team-title {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .team-members-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .team-member-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .team-member-item img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.15);
+            transition: all 0.25s ease;
+            filter: brightness(0.9);
+        }
+        .team-member-item:hover img {
+            border-color: #3AAFA9;
+            transform: scale(1.15) translateY(-2px);
+            filter: brightness(1);
+            box-shadow: 0 4px 12px rgba(58,175,169,0.4);
+        }
+        .team-member-tooltip {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,20,30,0.95);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(58,175,169,0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 999;
+        }
+        .team-member-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: rgba(20,20,30,0.95);
+        }
+        .team-member-item:hover .team-member-tooltip {
+            opacity: 1;
+        }
+        .team-member-role {
+            font-size: 0.58rem;
+            color: rgba(255,255,255,0.35);
+            margin-top: 3px;
+            text-align: center;
+            max-width: 44px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -390,6 +481,51 @@
                                 </a>
                             </li>
                         </ul>
+
+                        <!-- ===== Team Section ===== -->
+                        <div class="sidebar-team-section">
+                            <div class="sidebar-team-title">
+                                <i class="fa fa-users" style="color: #3AAFA9; font-size: 0.75rem;"></i>
+                                Equipo de Desarrollo
+                            </div>
+                            <div class="team-members-grid">
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Emerson Bolaños · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 2.jpg" alt="Ana García">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Diana Scarpeta · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 3.jpg" alt="Carlos López">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Valey Jimenez · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 4.jpg" alt="María Torres">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Juan Papamija · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 5.jpg" alt="Luis Ramos">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Sharit · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 6.jpg" alt="Sara Méndez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Felipe · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 7.jpg" alt="Pedro Núñez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Santiago · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 8.jpg" alt="Pedro Núñez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                            </div>
+                        </div>
                     </nav>
                 </div>
             </div>
