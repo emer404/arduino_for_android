@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.esp32.iotdashboard"
+        version="1.0.0"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+    <name>IoT MQTT Dashboard</name>
+    <description>Panel de control IoT para ESP32 via MQTT. Equipo: Emerson Bolaños, Diana Scarpeta, Valey Jimenez, Juan Papamija, Sharit, Felipe, Santiago.</description>
+    <author email="dev@esp32iot.com" href="https://github.com">Equipo IoT ESP32</author>
+
+    <content src="index.html" />
+
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="ws://*/*" />
+    <allow-intent href="wss://*/*" />
+    <allow-navigation href="*" />
+
+    <!-- Iconos PNG por densidad -->
+    <icon src="res/icon/android/icon-mdpi.png"    density="mdpi" />
+    <icon src="res/icon/android/icon-hdpi.png"    density="hdpi" />
+    <icon src="res/icon/android/icon-xhdpi.png"   density="xhdpi" />
+    <icon src="res/icon/android/icon-xxhdpi.png"  density="xxhdpi" />
+    <icon src="res/icon/android/icon-xxxhdpi.png" density="xxxhdpi" />
+
+    <platform name="android">
+        <!-- Copiar network_security_config -->
+        <resource-file src="res/android/xml/network_security_config.xml"
+                       target="app/src/main/res/xml/network_security_config.xml" />
+        <preference name="android-minSdkVersion" value="21" />
+        <preference name="android-targetSdkVersion" value="33" />
+    </platform>
+
+    <preference name="BackgroundColor" value="0xff0b132b" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="EnableViewportScale" value="true" />
+
+</widget>

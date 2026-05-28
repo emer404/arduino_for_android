@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration para IoT MQTT Dashboard
+    Permite tráfico WebSocket (ws://) sin cifrar hacia los brokers MQTT públicos.
+    Android 9+ bloquea HTTP/WS sin cifrar por defecto; este archivo lo habilita
+    solo para los dominios de brokers conocidos.
+-->
+<network-security-config>
+
+    <!-- Configuración base: permite cleartext a los brokers MQTT públicos -->
+    <domain-config cleartextTrafficPermitted="true">
+
+        <!-- HiveMQ público -->
+        <domain includeSubdomains="true">broker.hivemq.com</domain>
+
+        <!-- EMQX público -->
+        <domain includeSubdomains="true">broker.emqx.io</domain>
+
+        <!-- Mosquitto test -->
+        <domain includeSubdomains="true">test.mosquitto.org</domain>
+
+        <!-- Localhoast / redes locales para brokers propios -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+
+        <!-- Rangos de red local comunes (broker Mosquitto en LAN) -->
+        <domain includeSubdomains="true">192.168.0.0</domain>
+        <domain includeSubdomains="true">192.168.1.0</domain>
+
+    </domain-config>
+
+    <!-- Para dominios de CDNs usados en la app (Chart.js, SweetAlert2, MQTT.js) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">cdn.jsdelivr.net</domain>
+        <domain includeSubdomains="true">unpkg.com</domain>
+        <domain includeSubdomains="true">cdnjs.cloudflare.com</domain>
+        <domain includeSubdomains="true">cdn.jsdelivr.net</domain>
+        <domain includeSubdomains="true">code.jquery.com</domain>
+        <domain includeSubdomains="true">cdn.jsdelivr.net</domain>
+    </domain-config>
+
+</network-security-config>

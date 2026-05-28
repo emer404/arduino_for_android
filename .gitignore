@@ -257,6 +257,9 @@ credentials.h
 *.map
 *.sym
 
+# SDK local de Android instalado para compilar
+android-sdk/
+
 # Archivos temporales de Arduino
 *.bak
 *.backup

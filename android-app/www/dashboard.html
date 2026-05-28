@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>control de arduino</title>
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="assets/css/adminlte.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/plugins/font-awesome/css/font-awesome.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="assets/plugins/select2/select2.min.css">
+    <link rel="icon" type="image/png" href="assets/images/icons/favicon.ico" />
+    <!-- bootstrap wysihtml5 - text editor -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="assets/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
+    <!-- library for persian date picker -->
+    <link type="text/css" rel="stylesheet" href="assets/plugins/kamadatepicker/kamadatepicker.min.css" />
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.min.js"></script>
+    <script src="assets/plugins/kamadatepicker/kamadatepicker.holidays.js"></script>
+    <link rel="stylesheet" href="assets/css/custom-style.css">
+
+    <style>
+        /* Custom UI Components */
+        .device-control-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .device-control-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        .device-icon-container {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .icon-fan { background-color: #e3f2fd; color: #1e88e5; }
+        .icon-plug { background-color: #f3e5f5; color: #8e24aa; }
+
+        /* Colores específicos para LEDs */
+        .icon-led1 { background-color: #ffebee; color: #e53935; border: 2px solid #ef9a9a; }
+        .icon-led2 { background-color: #e8f5e9; color: #43a047; border: 2px solid #a5d6a7; }
+        .icon-led3 { background-color: #e3f2fd; color: #1e88e5; border: 2px solid #90caf9; }
+
+        .card-led1 { border-left: 4px solid #e53935; }
+        .card-led2 { border-left: 4px solid #43a047; }
+        .card-led3 { border-left: 4px solid #1e88e5; }
+
+        .status-led1 { color: #e53935; }
+        .status-led2 { color: #43a047; }
+        .status-led3 { color: #1e88e5; }
+
+        .device-meta {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .device-meta h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0 0 4px 0;
+        }
+        .device-meta p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 0 0 2px 0;
+        }
+        .status-badge-inline {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            height: fit-content;
+        }
+        .switch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        /* The Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 130px;
+            height: 46px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e53935; /* OFF Red */
+            transition: .3s;
+            border-radius: 46px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 38px;
+            width: 38px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #43a047; /* ON Green */
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(84px);
+        }
+        .switch-text {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            z-index: 1;
+            transition: .3s;
+        }
+        .text-off { right: -15px; }
+        .text-on { left: -15px; opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-off { opacity: 0; }
+        .toggle-switch input:checked + .toggle-slider .text-on { opacity: 1; }
+
+        .status-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .state-off { color: #e53935; }
+        .state-off .dot { background-color: #e53935; }
+        .state-on { color: #43a047; }
+        .state-on .dot { background-color: #43a047; }
+
+        .card-bottom-row {
+            border-top: 1px solid #f1f1f1;
+            padding-top: 15px;
+            font-size: 0.8rem;
+            color: #9e9e9e;
+        }
+
+        /* Recent Activities */
+        .recent-activity-card {
+            border-radius: 14px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background-color: #fff;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .activity-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f4f4f4;
+            display: flex;
+            align-items: flex-start;
+            transition: background-color 0.2s ease;
+        }
+        .activity-item:hover {
+            background-color: #f8f9fa;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 18px;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .bg-gradient-success { background: linear-gradient(135deg, #43a047, #2e7d32); }
+        .bg-gradient-danger { background: linear-gradient(135deg, #e53935, #c62828); }
+        .bg-gradient-info { background: linear-gradient(135deg, #00acc1, #00838f); }
+        .activity-content {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .activity-time {
+            font-size: 0.8rem;
+            color: #9e9e9e;
+            font-weight: normal;
+        }
+        .activity-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.85rem;
+            padding-top: 12px;
+            border-top: 1px dashed #eaeaea;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+        }
+        .status-value {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        .status-on {
+            color: #2e7d32;
+        }
+        .status-off {
+            color: #c62828;
+        }
+        .status-info {
+            color: #00838f;
+        }
+        .status-date {
+            color: #6c757d;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        /* ===== Team Section in Sidebar ===== */
+        .sidebar-team-section {
+            margin: 10px 8px 8px 8px;
+            padding: 14px 12px 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .sidebar-team-title {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .team-members-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .team-member-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .team-member-item img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.15);
+            transition: all 0.25s ease;
+            filter: brightness(0.9);
+        }
+        .team-member-item:hover img {
+            border-color: #3AAFA9;
+            transform: scale(1.15) translateY(-2px);
+            filter: brightness(1);
+            box-shadow: 0 4px 12px rgba(58,175,169,0.4);
+        }
+        .team-member-tooltip {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,20,30,0.95);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(58,175,169,0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 999;
+        }
+        .team-member-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: rgba(20,20,30,0.95);
+        }
+        .team-member-item:hover .team-member-tooltip {
+            opacity: 1;
+        }
+        .team-member-role {
+            font-size: 0.58rem;
+            color: rgba(255,255,255,0.35);
+            margin-top: 3px;
+            text-align: center;
+            max-width: 44px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+    <script src="cordova.js"></script>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand bg-white navbar-light border-bottom">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- left logo -->
+            <ul class="navbar-nav mr-auto">
+                <a href="#" class="brand-link">
+                    <img src="assets/images/arduino-logo.png" alt="Logo" class="brand-image" style="opacity: .8; max-width: 150px; height: auto;">
+                </a>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center pr-2">
+                    <button id="btnMqttConnect" class="btn btn-sm btn-success mr-2" onclick="simulateMqttConnect()"><i class="fa fa-link"></i> Conectar</button>
+                    <button id="btnMqttDisconnect" class="btn btn-sm btn-outline-danger mr-2" onclick="simulateMqttDisconnect()" disabled><i class="fa fa-unlink"></i> Desconectar</button>
+                </li>
+                <li class="nav-item d-flex align-items-center pr-3">
+                    <span id="mqttStatusBadge" class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">🔴 Desconectado</span>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light text-center">control arduino</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div>
+                    <!-- Sidebar user panel -->
+                    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                        <div class="image">
+                            <img src="assets/images/Avatars/Avatar 1.jpg" class="img-circle elevation-2" alt="User Image" style="width: 2.5rem; height: 2.5rem;">
+                        </div>
+                        <div class="info">
+                            <a href="#" class="d-block">Usuario Administrador</a>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Menu -->
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                            <li class="nav-item">
+                                <a href="dashboard.html" class="nav-link">
+                                    <i class="nav-icon fa fa-home"></i>
+                                    <p>Inicio</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">PANEL IOT</li>
+
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fa fa-plug"></i>
+                                    <p>Conexión <i class="right fa fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: none; padding-left: 15px;">
+                                    <li class="nav-item">
+                                        <a href="config_mqtt.html" class="nav-link">
+                                            <i class="fa fa-wifi nav-icon"></i>
+                                            <p>MQTT</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-globe nav-icon"></i>
+                                            <p>HTTP</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="fa fa-ellipsis-h nav-icon"></i>
+                                            <p>Otros</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#control-section" class="nav-link">
+                                    <i class="nav-icon fa fa-sliders"></i>
+                                    <p>Control de Arduino</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#activities-section" class="nav-link">
+                                    <i class="nav-icon fa fa-history"></i>
+                                    <p>Actividades Recientes</p>
+                                </a>
+                            </li>
+
+
+                            <li class="nav-header" style="color: #6c757d; font-size: 0.85rem; padding-top: 15px;">SISTEMA</li>
+
+                            <li class="nav-item">
+                                <a href="login.html" class="nav-link exit">
+                                    <i class="nav-icon fa fa-sign-out text-danger"></i>
+                                    <p>Cerrar Sesión</p>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- ===== Team Section ===== -->
+                        <div class="sidebar-team-section">
+                            <div class="sidebar-team-title">
+                                <i class="fa fa-users" style="color: #3AAFA9; font-size: 0.75rem;"></i>
+                                Equipo de Desarrollo
+                            </div>
+                            <div class="team-members-grid">
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Emerson Bolaños · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 2.jpg" alt="Ana García">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Diana Scarpeta · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 3.jpg" alt="Carlos López">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Valey Jimenez · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 4.jpg" alt="María Torres">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Juan Papamija · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 5.jpg" alt="Luis Ramos">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Sharit · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 6.jpg" alt="Sara Méndez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Felipe · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 7.jpg" alt="Pedro Núñez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                                <div class="team-member-item">
+                                    <div class="team-member-tooltip">Santiago · DEV</div>
+                                    <img src="assets/images/Avatars/Avatar 8.jpg" alt="Pedro Núñez">
+                                    <span class="team-member-role">DEV</span>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 text-dark">control de arduino</h1>
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Hero Banner -->
+            <div class="container-fluid mb-4 mt-2">
+                <div id="heroCarousel" class="carousel slide" data-ride="carousel" data-interval="3000" style="height: 300px;">
+                    <ol class="carousel-indicators">
+                        <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#heroCarousel" data-slide-to="1"></li>
+                        <li data-target="#heroCarousel" data-slide-to="2"></li>
+                    </ol>
+                    <div class="carousel-inner" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); height: 300px;">
+                        <div class="carousel-item active" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(0, 77, 64, 0.7); color: #00e676; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(0, 230, 118, 0.3);">Sistema Inteligente</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Controla tus dispositivos Arduino</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #00e676; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">en tiempo real</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Monitorea, controla y automatiza tus proyectos IoT de manera fácil y segura desde cualquier lugar.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(49, 27, 146, 0.7); color: #b388ff; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(179, 136, 255, 0.3);">Análisis de Datos</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Visualiza métricas y gráficos</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #b388ff; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">con precisión</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Exporta tus reportes en PDF y Excel para un análisis detallado del entorno.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3 -->
+                        <div class="carousel-item" style="height: 300px; background-color: #0b132b; background-image: url('assets/images/carousel_bg.png'); background-size: cover; background-position: center;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b132b; opacity: 0.6;"></div>
+                            <div class="carousel-caption d-none d-md-block" style="text-align: left; left: 5%; bottom: auto; top: 50%; transform: translateY(-50%); width: 50%; position: relative; z-index: 1;">
+                                <span class="badge" style="background-color: rgba(191, 54, 12, 0.7); color: #ff9e80; padding: 8px 16px; font-size: 0.95rem; margin-bottom: 20px; border-radius: 20px; border: 1px solid rgba(255, 158, 128, 0.3);">Alertas</span>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; margin-bottom: 5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Recibe notificaciones</h2>
+                                <h2 style="font-weight: 700; font-size: 2.4rem; color: #ff9e80; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">al instante</h2>
+                                <p style="font-size: 1.15rem; color: #cfd8dc; font-weight: 400; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Configura umbrales de sensores para proteger tus dispositivos Arduino.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next" style="width: 5%; opacity: 1;">
+                        <span style="background-color: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                        </span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- main content body -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Sección de Control de Arduino movida más arriba -->
+
+                    <script>
+                        // MQTT client instance
+                        let mqttClient = null;
+                        let isConnected = false;
+
+                        // MQTT connection over WebSockets
+                        function connectMqtt() {
+                            const host = localStorage.getItem('mqtt_host') || 'broker.hivemq.com';
+                            const port = localStorage.getItem('mqtt_port') || '8000';
+                            const topic = localStorage.getItem('mqtt_topic') || 'LED/control';
+                            const useSSL = (localStorage.getItem('mqtt_ssl') || 'false') === 'true';
+
+                            // WebSocket URL format: ws://host:port/mqtt or wss://host:port/mqtt for SSL
+                            const protocol = useSSL ? 'wss' : 'ws';
+                            const wsUrl = `${protocol}://${host}:${port}/mqtt`;
+
+                            try {
+                                // Create MQTT client with WebSocket transport
+                                mqttClient = mqtt.connect(wsUrl, {
+                                    clientId: 'mqtt-dashboard-' + Math.random().toString(16).substr(2, 8),
+                                    clean: true,
+                                    connectTimeout: 4000,
+                                    reconnectPeriod: 1000
+                                });
+
+                                // Connection successful
+                                mqttClient.on('connect', () => {
+                                    console.log('MQTT connected successfully');
+                                    isConnected = true;
+
+                                    let badge = document.getElementById('mqttStatusBadge');
+                                    if(badge) {
+                                        badge.className = 'badge badge-success';
+                                        badge.innerText = '🟢 Conectado';
+                                    }
+                                    const btnConnect = document.getElementById('btnMqttConnect');
+                                    if(btnConnect) btnConnect.disabled = true;
+                                    const btnDisconnect = document.getElementById('btnMqttDisconnect');
+                                    if(btnDisconnect) btnDisconnect.disabled = false;
+
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: 'Conectado al broker MQTT',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true
+                                    });
+
+                                    // Subscribe to the topics
+                                    mqttClient.subscribe('LED1/status', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to LED1 status topic');
+                                        }
+                                    });
+
+                                    mqttClient.subscribe('LED2/status', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to LED2 status topic');
+                                        }
+                                    });
+
+                                    mqttClient.subscribe('LED3/status', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to LED3 status topic');
+                                        }
+                                    });
+
+                                    // Suscribirse también al tópico de temperatura
+                                    mqttClient.subscribe('sensor/temperatura', (err) => {
+                                        if (!err) {
+                                            console.log('Subscribed to temperature topic: sensor/temperatura');
+                                        }
+                                    });
+                                });
+
+                                // Handle incoming messages
+                                mqttClient.on('message', (receivedTopic, message) => {
+                                    console.log('Received message:', receivedTopic, message.toString());
+
+                                    const payload = message.toString();
+
+                                    // Procesar según el tópico
+                                    if (receivedTopic === 'sensor/temperatura') {
+                                        // Mensaje de temperatura para el gráfico
+                                        const numValue = parseFloat(payload);
+                                        if (!isNaN(numValue)) {
+                                            if(typeof updateChart === 'function') {
+                                                updateChart(numValue);
+                                                console.log('Temperature updated:', numValue, '°C');
+                                            }
+                                        }
+                                    } else if (receivedTopic === 'LED1/status') {
+                                        // Estado del LED1 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(1, payload === 'ON');
+                                            addActivityLog('Actualización LED1 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
+                                    } else if (receivedTopic === 'LED2/status') {
+                                        // Estado del LED2 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(2, payload === 'ON');
+                                            addActivityLog('Actualización LED2 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
+                                    } else if (receivedTopic === 'LED3/status') {
+                                        // Estado del LED3 desde ESP32
+                                        if (payload === 'ON' || payload === 'OFF') {
+                                            updateLedUIState(3, payload === 'ON');
+                                            addActivityLog('Actualización LED3 (MQTT)', 'Estado remoto: ' + payload, payload === 'ON');
+                                        }
+                                    } else {
+                                        // Intentar parsear como número o JSON para compatibilidad
+                                        const numValue = parseFloat(payload);
+                                        if (!isNaN(numValue) && payload.trim() === numValue.toString()) {
+                                            if(typeof updateChart === 'function') updateChart(numValue);
+                                        } else {
+                                            try {
+                                                const data = JSON.parse(payload);
+                                                if (data.temperatura !== undefined) {
+                                                    if(typeof updateChart === 'function') updateChart(parseFloat(data.temperatura));
+                                                } else if (data.value !== undefined) {
+                                                    if(typeof updateChart === 'function') updateChart(parseFloat(data.value));
+                                                }
+                                            } catch(e) {
+                                                // No es JSON ni número simple
+                                            }
+                                        }
+                                    }
+                                });
+
+                                // Connection error
+                                mqttClient.on('error', (err) => {
+                                    console.error('MQTT connection error:', err);
+                                    isConnected = false;
+
+                                    let badge = document.getElementById('mqttStatusBadge');
+                                    if(badge) {
+                                        badge.className = 'badge badge-danger';
+                                        badge.innerText = '❌ Error de conexión';
+                                    }
+
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: 'Error de conexión MQTT',
+                                        showConfirmButton: false,
+                                        timer: 4000,
+                                        timerProgressBar: true
+                                    });
+                                });
+
+                                // Handle disconnection
+                                mqttClient.on('close', () => {
+                                    console.log('MQTT connection closed');
+                                    isConnected = false;
+
+                                    if (!isConnected) {
+                                        let badge = document.getElementById('mqttStatusBadge');
+                                        if(badge) {
+                                            badge.className = 'badge badge-secondary';
+                                            badge.innerText = '🔴 Desconectado';
+                                        }
+                                        const btnConnect = document.getElementById('btnMqttConnect');
+                                        if(btnConnect) btnConnect.disabled = false;
+                                        const btnDisconnect = document.getElementById('btnMqttDisconnect');
+                                        if(btnDisconnect) btnDisconnect.disabled = true;
+
+                                        Swal.fire({
+                                            toast: true,
+                                            position: 'top-end',
+                                            icon: 'warning',
+                                            title: 'Conexión MQTT cerrada',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true
+                                        });
+                                    }
+                                });
+
+                            } catch (error) {
+                                console.error('MQTT connection error:', error);
+                                let badge = document.getElementById('mqttStatusBadge');
+                                if(badge) {
+                                    badge.className = 'badge badge-danger';
+                                    badge.innerText = '❌ Error';
+                                }
+                            }
+                        }
+
+                        // Disconnect MQTT
+                        function disconnectMqtt() {
+                            if (mqttClient) {
+                                mqttClient.end();
+                                mqttClient = null;
+                            }
+
+                            isConnected = false;
+
+                            let badge = document.getElementById('mqttStatusBadge');
+                            badge.className = 'badge badge-secondary';
+                            badge.innerText = '🔴 Desconectado';
+                            document.getElementById('btnMqttConnect').disabled = false;
+                            document.getElementById('btnMqttDisconnect').disabled = true;
+                        }
+
+                        // Publish message to MQTT topic
+                        function publishMqttMessage(topic, message) {
+                            if (mqttClient && isConnected) {
+                                mqttClient.publish(topic, message, (err) => {
+                                    if (err) {
+                                        console.error('Publish error:', err);
+                                    } else {
+                                        console.log('Message published:', message, 'to topic:', topic);
+                                    }
+                                });
+                            } else {
+                                console.warn('MQTT not connected');
+                            }
+                        }
+
+                        // Wrapper functions for button onclick handlers
+                        function simulateMqttConnect() {
+                            connectMqtt();
+                        }
+
+                        function simulateMqttDisconnect() {
+                            disconnectMqtt();
+                        }
+
+                        // Se removió la conexión automática para permitir conexión manual
+                    </script>
+
+                    <!-- Control Devices Cards Section -->
+                    <h3 id="control-section" class="mb-3 font-weight-bold" style="color: #333; font-size: 1.5rem; scroll-margin-top: 70px;">Control de LEDs Arduino</h3>
+                    <div class="row mb-4">
+                        <!-- LED 1 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
+                            <div class="device-control-card card-led1">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-led1">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4 style="color: #e53935;">LED 1 (D3)</h4>
+                                        <p>GPIO 3</p>
+                                        <p>Principal</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="led1Switch" onchange="toggleLedState(1, this)">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-off" id="led1StatusDot">
+                                        <span class="dot" style="background-color: #e53935;"></span> Estado: <span id="led1StateText" style="margin-left: 4px;">Apagado</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-bottom-row">
+                                    <span style="color: #e53935;">Tópico: LED1/control</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LED 2 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
+                            <div class="device-control-card card-led2">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-led2">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4 style="color: #43a047;">LED 2 (D5)</h4>
+                                        <p>GPIO 5</p>
+                                        <p>Secundario</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="led2Switch" onchange="toggleLedState(2, this)">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-off" id="led2StatusDot">
+                                        <span class="dot" style="background-color: #43a047;"></span> Estado: <span id="led2StateText" style="margin-left: 4px;">Apagado</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-bottom-row">
+                                    <span style="color: #43a047;">Tópico: LED2/control</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LED 3 -->
+                        <div class="col-md-4 col-lg-4 mb-3">
+                            <div class="device-control-card card-led3">
+                                <div class="card-top-row">
+                                    <div class="device-icon-container icon-led3">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div class="device-meta">
+                                        <h4 style="color: #1e88e5;">LED 3 (D7)</h4>
+                                        <p>GPIO 7</p>
+                                        <p>Terciario</p>
+                                    </div>
+                                    <div class="status-badge-inline">
+                                        En línea
+                                    </div>
+                                </div>
+
+                                <div class="switch-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="led3Switch" onchange="toggleLedState(3, this)">
+                                        <span class="toggle-slider">
+                                            <span class="switch-text text-off">OFF</span>
+                                            <span class="switch-text text-on">ON</span>
+                                        </span>
+                                    </label>
+                                    <div class="status-label state-off" id="led3StatusDot">
+                                        <span class="dot" style="background-color: #1e88e5;"></span> Estado: <span id="led3StateText" style="margin-left: 4px;">Apagado</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-bottom-row">
+                                    <span style="color: #1e88e5;">Tópico: LED3/control</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Chart Section -->
+                        <div class="row mb-4" id="chart-section" style="scroll-margin-top: 70px;">
+                            <div class="col-12">
+                                <div class="card" style="border-radius: 14px; border: 1px solid #eaeaea; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                                    <div class="card-header bg-white border-0 pt-4 pb-2" style="border-radius: 14px 14px 0 0;">
+                                        <h3 class="card-title font-weight-bold" style="color: #333; font-size: 1.3rem;">
+                                            <i class="fa fa-line-chart text-success mr-2"></i>Monitorización en Tiempo Real
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="height: 300px;">
+                                            <canvas id="realtimeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            var realtimeChart;
+                            document.addEventListener("DOMContentLoaded", function() {
+                                var ctx = document.getElementById('realtimeChart');
+                                if (ctx && typeof Chart !== 'undefined') {
+                                    realtimeChart = new Chart(ctx.getContext('2d'), {
+                                        type: 'line',
+                                        data: {
+                                            labels: [], 
+                                            datasets: [{
+                                                label: 'Temperatura (°C) / Sensor',
+                                                data: [],
+                                                borderColor: '#43a047',
+                                                backgroundColor: 'rgba(67, 160, 71, 0.1)',
+                                                borderWidth: 2,
+                                                pointBackgroundColor: '#43a047',
+                                                pointRadius: 4,
+                                                fill: true
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                xAxes: [{
+                                                    display: true,
+                                                    scaleLabel: { display: true, labelString: 'Hora' }
+                                                }],
+                                                yAxes: [{
+                                                    display: true,
+                                                    scaleLabel: { display: true, labelString: 'Valor' },
+                                                    ticks: { suggestedMin: 15, suggestedMax: 35 }
+                                                }]
+                                            },
+                                            animation: { duration: 0 }
+                                        }
+                                    });
+                                }
+                            });
+
+                            function updateChart(value) {
+                                if (!realtimeChart) return;
+                                
+                                const now = new Date();
+                                const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                                
+                                realtimeChart.data.labels.push(timeStr);
+                                realtimeChart.data.datasets[0].data.push(value);
+                                
+                                if (realtimeChart.data.labels.length > 15) {
+                                    realtimeChart.data.labels.shift();
+                                    realtimeChart.data.datasets[0].data.shift();
+                                }
+                                realtimeChart.update();
+                            }
+                        </script>
+
+                        <!-- Recent Activities Section -->
+                    <div id="activities-section" class="row" style="scroll-margin-top: 70px;">
+                        <div class="col-12 mb-3">
+                            <div class="recent-activity-card">
+                                <div class="card-header border-0 bg-transparent" style="padding: 20px 24px 10px;">
+                                    <h3 class="card-title font-weight-bold m-0" style="color: #333; font-size: 1.3rem;">Actividades Recientes</h3>
+                                </div>
+                                <div class="card-body p-0" id="activity-log-list" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-gradient-success">
+                                            <i class="fa fa-bolt"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                <span>Estado</span>
+                                                <span class="activity-time">Hoy, 10:24 AM</span>
+                                            </div>
+                                            <div class="activity-desc">El dispositivo fue activado de manera remota desde la interfaz web.</div>
+                                            <div class="activity-status">
+                                                <span class="status-label">Estado: </span>
+                                                <span class="status-value status-on">● Encendido</span>
+                                                <span class="status-date">Fecha: 21/05/2026</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-gradient-info">
+                                            <i class="fa fa-refresh"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                <span>Sistema reiniciado</span>
+                                                <span class="activity-time">Ayer, 11:45 PM</span>
+                                            </div>
+                                            <div class="activity-desc">Mantenimiento programado: el broker MQTT se reinició correctamente.</div>
+                                            <div class="activity-status">
+                                                <span class="status-label">Estado: </span>
+                                                <span class="status-value status-info">● Reiniciado</span>
+                                                <span class="status-date">Fecha: 20/05/2026</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        // Add dynamic activity log
+                        function addActivityLog(title, desc, isOn) {
+                            const list = document.getElementById('activity-log-list');
+                            if (!list) return;
+
+                            const now = new Date();
+                            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            const dateStr = now.toLocaleDateString();
+
+                            const iconClass = isOn ? 'bg-gradient-success' : 'bg-gradient-danger';
+                            const faIcon = isOn ? 'fa-bolt' : 'fa-power-off';
+                            const textColor = isOn ? '#43a047' : '#e53935';
+                            const statusText = isOn ? '● Encendido' : '● Apagado';
+
+                            const html = `
+                                <div class="activity-item" style="animation: fadeIn 0.5s; border-left: 3px solid ${textColor}; background-color: #fafafa;">
+                                    <div class="activity-icon ${iconClass}">
+                                        <i class="fa ${faIcon}"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">
+                                            <span>${title}</span>
+                                            <span class="activity-time">Hoy, ${timeStr}</span>
+                                        </div>
+                                        <div class="activity-desc">${desc}</div>
+                                        <div class="activity-status">
+                                            <span class="status-label">Estado: </span>
+                                            <span class="status-value" style="color: ${textColor}; font-weight: bold;">${statusText}</span>
+                                            <span class="status-date">Fecha: ${dateStr}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            list.insertAdjacentHTML('afterbegin', html);
+                        }
+
+                        // Update UI state without publishing (for incoming MQTT messages)
+                        function updateLedUIState(ledNum, isOn) {
+                            const switchEl = document.getElementById('led' + ledNum + 'Switch');
+                            const textEl = document.getElementById('led' + ledNum + 'StateText');
+                            const containerEl = document.getElementById('led' + ledNum + 'StatusDot');
+
+                            if (switchEl && textEl && containerEl) {
+                                switchEl.checked = isOn;
+                                if (isOn) {
+                                    textEl.innerText = "Encendido";
+                                    containerEl.classList.remove('state-off');
+                                    containerEl.classList.add('state-on');
+                                } else {
+                                    textEl.innerText = "Apagado";
+                                    containerEl.classList.remove('state-on');
+                                    containerEl.classList.add('state-off');
+                                }
+                            }
+                        }
+
+                        function toggleLedState(ledNum, checkbox) {
+                            var state = checkbox.checked ? "ON" : "OFF";
+                            const textEl = document.getElementById('led' + ledNum + 'StateText');
+                            const containerEl = document.getElementById('led' + ledNum + 'StatusDot');
+
+                            if(checkbox.checked) {
+                                textEl.innerText = "Encendido";
+                                containerEl.classList.remove('state-off');
+                                containerEl.classList.add('state-on');
+                            } else {
+                                textEl.innerText = "Apagado";
+                                containerEl.classList.remove('state-on');
+                                containerEl.classList.add('state-off');
+                            }
+
+                            // Publish state change via MQTT
+                            const topic = 'LED' + ledNum + '/control';
+                            publishMqttMessage(topic, state);
+                            // Log the manual action
+                            addActivityLog('Comando Enviado (Web)', 'LED' + ledNum + ' cambiar a: ' + state, state === 'ON');
+                        }
+                    </script>
+
+                    <!-- Footer -->
+                    <div class="row mt-5 mb-3">
+                        <div class="col-12 text-center" style="color: #6c757d; font-size: 0.9rem;">
+                            <hr style="border-top: 1px solid #eaeaea; margin-bottom: 20px;">
+                            <strong>&copy; 2026 Panel de Control IoT.</strong> Diseñado para monitoreo MQTT de ESP32 y Arduino.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/jquery/jquery-ui.min.js"></script>
+    <script>$.widget.bridge('uibutton', $.ui.button)</script>
+    <script src="assets/plugins/select2/select2.full.min.js"></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/plugins/knob/jquery.knob.js"></script>
+    <script src="assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+    <script src="assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="assets/plugins/fastclick/fastclick.js"></script>
+    <script src="assets/js/adminlte.js"></script>
+    <script src="assets/plugins/chartjs-old/Chart.min.js"></script>
+
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/jquery/jquery.easing.min.js"></script>
+    <script src="assets/js/ruang-admin.min.js"></script>
+    <script src="assets/plugins/chart.js/Chart.min.js"></script>
+    <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="assets/vendor/mqtt/mqtt.min.js"></script>
+
+    <script>
+        var customOptions = {
+            placeholder: "day/month/year"
+            , twodigit: false
+            , closeAfterSelect: false
+            , nextButtonIcon: "fa fa-arrow-circle-right"
+            , previousButtonIcon: "fa fa-arrow-circle-left"
+            , buttonsColor: "green"
+            , forceFarsiDigits: true
+            , markToday: true
+            , markHolidays: true
+            , highlightSelectedDay: true
+            , sync: true
+            , gotoToday: true
+        }
+        if (document.getElementById('date1')) kamaDatepicker('date1', customOptions);
+        if (document.getElementById('date2')) kamaDatepicker('date2', customOptions);
+    </script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="assets/vendor/raphael/raphael.min.js"></script>
+    <script src="assets/plugins/morris/morris.min.js"></script>
+    <script src="assets/vendor/sweetalert2/sweetalert2.min.js"></script>
+    <script>
+        $(function () {
+            $('.select2').select2()
+        })
+    </script>
+</body>
+</html>
